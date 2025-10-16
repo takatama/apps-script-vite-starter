@@ -136,11 +136,34 @@ Alternatively, if you already have a `.clasp.json` file, pull the existing code:
 clasp pull
 ```
 
-**Step 3: Organize Code into the Project Structure**
+**Step 3: Organize Files into the Template Structure**
 
-Move your existing code to follow this project's layout:
+After cloning, `clasp` will create several files in your project root. You need to reorganize them:
 
-- **Server-side Apps Script code** → `src/server/` (e.g., `doGet()`, `doPost()`)
+```bash
+# Files created by clasp clone-script:
+# - appsscript.json
+# - index.html (if exists)
+# - Code.js (or similar .js/.gs files)
+
+# 1. Move appsscript.json to apps-script folder
+mv appsscript.json apps-script/
+
+# 2. Move any .js/.gs server code to apps-script folder
+mv Code.js apps-script/
+# (repeat for other server-side .js/.gs files)
+
+# 3. If there's an HTML file, move it to src/
+mv index.html src/
+# (or integrate it with the existing src/index.html)
+
+# 4. Remove any unwanted server files that conflict with template
+# rm apps-script/Code.js  # if you want to use the template's Code.js instead
+```
+
+Organize your code according to this template's structure:
+
+- **Apps Script server code** → `apps-script/` (e.g., `doGet()`, `doPost()`, utilities)
 - **HTML UI** → `src/index.html`
 - **Client-side JavaScript** → `src/client/`
 - **Shared utilities** → `src/shared/`
@@ -202,17 +225,22 @@ clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
 
 ```
 src/
-├── index.html          # Main UI file
+├── index.html          # Main UI file (client-side)
 ├── style.css           # Styles
 └── client/
     └── main.ts         # Client entry point (optional)
 
-public/                 # Static assets (copied as-is)
 apps-script/
-└── appsscript.json     # Apps Script manifest
+├── appsscript.json     # Apps Script manifest
+└── Code.js             # Server-side Apps Script code (doGet, doPost, etc.)
+
+public/                 # Static assets (copied as-is)
 build/                  # Compiled output (generated)
 dist/                   # Bundled files (generated)
+.clasp.json             # clasp configuration (created by clasp create/clone)
 ```
+
+> **Note**: After `clasp clone-script`, you'll need to move files from the root directory into their proper locations within this structure.
 
 ---
 
