@@ -165,8 +165,6 @@ Organize your code according to this template's structure:
 
 - **Apps Script server code** → `apps-script/` (e.g., `doGet()`, `doPost()`, utilities)
 - **HTML UI** → `src/index.html`
-- **Client-side JavaScript** → `src/client/`
-- **Shared utilities** → `src/shared/`
 
 **Step 4: Build and Upload**
 
