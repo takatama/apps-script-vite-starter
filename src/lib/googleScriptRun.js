@@ -1,4 +1,4 @@
-import { mockData } from "../mocks/mockData.js";
+import { mockData } from "./googleScriptRunMockData.js";
 
 /**
  * Simple wrapper for google.script.run

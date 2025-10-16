@@ -130,7 +130,7 @@ googleScriptRun
 
 ### Adding Mock Data
 
-Edit `src/mocks/mockData.js` to add mock responses for your server functions:
+Edit `src/lib/googleScriptRunMockData.js` to add mock responses for your server functions:
 
 ```javascript
 export const mockData = {
@@ -272,14 +272,13 @@ clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
 
 ```
 src/
-├── index.html              # Main UI file (client-side)
-├── style.css               # Styles
+├── index.html                      # Main UI file (client-side)
+├── style.css                       # Styles
 ├── lib/
-│   └── googleScriptRun.js  # google.script.run wrapper with mock support
-├── client/
-│   └── main.js             # Client application logic
-└── mocks/
-    └── mockData.js         # Mock data for local development
+│   ├── googleScriptRun.js          # google.script.run wrapper with mock support
+│   └── googleScriptRunMockData.js  # Mock data for local development
+└── client/
+    └── main.js                     # Client application logic
 
 apps-script/
 ├── appsscript.json         # Apps Script manifest
@@ -297,8 +296,8 @@ vite.config.js              # Vite build configuration
 
 ## 📖 Tips & Tricks
 
-- **Local Development:** Use `npm run dev` to develop with mock data. The `googleScriptRun` wrapper automatically detects when `google.script.run` is unavailable and uses mock data from `src/mocks/mockData.js`.
-- **Mock Data:** Add your own mock responses in `src/mocks/mockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
+- **Local Development:** Use `npm run dev` to develop with mock data. The `googleScriptRun` wrapper automatically detects when `google.script.run` is unavailable and uses mock data from `src/lib/googleScriptRunMockData.js`.
+- **Mock Data:** Add your own mock responses in `src/lib/googleScriptRunMockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
 - **Faster iterations:** Use `npm run dev` for rapid local development, then `npm run push` to deploy and test with real Apps Script integration.
 - **Live Updates:** Combine `npm run dev` with `clasp open-web-app` to preview your deployed app while making changes.
 - **Rollback:** Each `clasp create-deployment` creates a version; use Google's version history to revert.

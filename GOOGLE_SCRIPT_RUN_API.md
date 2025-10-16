@@ -90,11 +90,11 @@ googleScriptRun
 
 ## 🔧 Development Mode
 
-During local development (when `google.script.run` is not available), the wrapper automatically uses mock data from `src/mocks/mockData.js`.
+During local development (when `google.script.run` is not available), the wrapper automatically uses mock data from `src/lib/googleScriptRunMockData.js`.
 
 ### Adding Mock Data
 
-Edit `src/mocks/mockData.js`:
+Edit `src/lib/googleScriptRunMockData.js`:
 
 ```javascript
 export const mockData = {
