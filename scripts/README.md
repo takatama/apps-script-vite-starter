@@ -8,11 +8,10 @@ This directory contains deployment and utility scripts for managing Google Apps 
 scripts/
 ├── lib/
 │   └── clasp-utils.js          # Shared utility functions for clasp operations
-├── deploy.js                   # Main deployment script (updates versioned deployment)
-├── deploy-interactive.js       # Interactive deployment with user prompts
-├── deploy-with-env.js          # Deployment with .env file support
+├── deploy.js                   # Updates existing production deployment
+├── deploy-new.js               # Recreates production deployment from scratch
 ├── open-staging.js             # Opens @HEAD deployment in browser
-├── open-prod.js                # Opens versioned deployment in browser
+├── open-prod.js                # Opens production deployment in browser
 └── setup-rootdir.js            # Configures .clasp.json rootDir setting
 ```
 
@@ -24,9 +23,11 @@ Shared functions used across all deployment scripts:
 
 - `getDeployments()` - Fetches all deployments from Apps Script
 - `findHeadDeployment(deployments)` - Finds the @HEAD deployment
-- `findVersionedDeployment(deployments)` - Finds the first versioned deployment
+- `findVersionedDeployment(deployments)` - Finds the first versioned deployment (production)
 - `createDeployment()` - Creates a new versioned deployment
 - `updateDeployment(deploymentId)` - Updates an existing deployment
+- `deleteDeployment(deploymentId)` - Deletes a deployment
+- `recreateProductionDeployment()` - Deletes all versioned deployments and creates a new one
 
 ### Web App Operations
 
@@ -44,23 +45,17 @@ Main deployment script for production releases.
 
 - Finds the first versioned (non-@HEAD) deployment
 - Updates it if exists, creates new if not
+- **Constraint**: Assumes only one production deployment exists
 - Used by: `npm run prod`
 
-### `deploy-interactive.js`
+### `deploy-new.js`
 
-Interactive deployment with user selection.
+Recreates production deployment from scratch.
 
-- Lists all existing deployments
-- Lets user choose which to update or create new
-- Used by: `npm run prod:interactive`
-
-### `deploy-with-env.js`
-
-Environment-variable driven deployment.
-
-- Reads `DEPLOYMENT_ID` from `.env` file
-- Falls back to auto-detection if not set
-- Useful for CI/CD pipelines
+- Deletes all existing versioned deployments
+- Creates a fresh production deployment
+- Use this when you want to reset the production deployment
+- Used by: `npm run prod:new`
 
 ### `open-staging.js`
 

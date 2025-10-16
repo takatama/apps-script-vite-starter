@@ -13,8 +13,7 @@
     "staging:open": "node scripts/open-staging.js",
     "prod": "npm run build && clasp push && node scripts/deploy.js",
     "prod:open": "node scripts/open-prod.js",
-    "prod:new": "npm run build && clasp push && clasp create-deployment",
-    "prod:interactive": "npm run build && clasp push && node scripts/deploy-interactive.js",
+    "prod:new": "npm run build && clasp push && node scripts/deploy-new.js",
     "deployments": "clasp list-deployments"
   },
   "devDependencies": {

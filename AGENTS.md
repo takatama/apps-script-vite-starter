@@ -15,8 +15,8 @@
 - `npm run setup` ensures `.clasp.json` has `rootDir: "dist"` configured (runs automatically before build).
 - `npm run build` emits production bundles to `dist/`.
 - `npm run staging` / `npm run staging:open` builds and pushes to staging (@HEAD) environment.
-- `npm run prod` / `npm run prod:open` builds, pushes, and updates production (versioned) deployment.
-- `npm run prod:new` creates a new versioned deployment.
+- `npm run prod` / `npm run prod:open` builds, pushes, and updates the single production (versioned) deployment.
+- `npm run prod:new` recreates production deployment from scratch (deletes existing and creates new).
 - `npm run deployments` lists all active deployments.
 
 ## Coding Style & Naming Conventions
@@ -47,5 +47,7 @@
   - **Staging (@HEAD)**: `npm run staging:open` - Quick testing with real backend (`.../dev` URL)
   - **Production (versioned)**: `npm run prod:open` - Stable releases for end users (`.../exec` URL)
 - Use `npm run staging` to push to @HEAD for quick testing without creating versions.
-- Use `npm run prod` for production releases; it updates the existing versioned deployment or creates a new one.
+- Use `npm run prod` for production releases; it updates the single production deployment.
+- **Constraint**: Only one production deployment is maintained for simplicity.
+- Use `npm run prod:new` to recreate production deployment from scratch.
 - Use `npm run deployments` to view all deployment IDs and URLs.

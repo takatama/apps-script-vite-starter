@@ -105,3 +105,42 @@ export function updateDeployment(deploymentId) {
     process.exit(1);
   }
 }
+
+/**
+ * Deletes a deployment
+ * @param {string} deploymentId - The deployment ID to delete
+ */
+export function deleteDeployment(deploymentId) {
+  try {
+    exec(`clasp delete-deployment ${deploymentId}`, { stdio: "inherit" });
+    console.log("✅ Deployment deleted successfully");
+  } catch (error) {
+    console.error("❌ Deployment deletion failed:", error.message);
+    process.exit(1);
+  }
+}
+
+/**
+ * Recreates the production deployment (deletes all versioned deployments and creates a new one)
+ */
+export function recreateProductionDeployment() {
+  const deployments = getDeployments();
+  const versionedDeployments = deployments.filter(
+    (d) =>
+      d.deploymentConfig?.versionNumber &&
+      d.deploymentConfig.versionNumber !== "HEAD"
+  );
+
+  if (versionedDeployments.length > 0) {
+    console.log(
+      `🗑️  Deleting ${versionedDeployments.length} existing versioned deployment(s)...`
+    );
+    for (const deployment of versionedDeployments) {
+      console.log(`   Deleting ${deployment.deploymentId}...`);
+      deleteDeployment(deployment.deploymentId);
+    }
+  }
+
+  console.log("🆕 Creating new production deployment...");
+  createDeployment();
+}

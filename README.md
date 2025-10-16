@@ -146,24 +146,24 @@ npm run staging:open   # Open staging web app in browser
 
 ### **Production (Versioned Deployment)**
 
-Versioned deployments (`@1`, `@2`, `@3`...) are stable releases for end users:
+Production uses a single versioned deployment for stable releases:
 
 ```bash
-npm run prod           # Build, push, and update versioned deployment
+npm run prod           # Build, push, and update production deployment
 npm run prod:open      # Open production web app in browser
 ```
 
 - **URL**: Ends with `.../exec`
 - **Environment**: Google Apps Script versioned deployment
 - **Use case**: Production releases for end users
-- **Updates**: Creates or updates a versioned deployment
+- **Updates**: Creates or updates the production deployment
+- **Constraint**: Only one production deployment is maintained
 
 #### Additional Production Commands
 
 ```bash
-npm run prod:new          # Force create a new versioned deployment
-npm run prod:interactive  # Choose which deployment to update
-npm run deployments       # List all deployments
+npm run prod:new        # Recreate production deployment from scratch
+npm run deployments     # List all deployments
 ```
 
 ### **Typical Workflow**
@@ -391,10 +391,10 @@ vite.config.js              # Vite build configuration
   - **Staging (@HEAD)**: `npm run staging` / `npm run staging:open` - Quick testing with real Apps Script backend (`.../dev` URL)
   - **Production (versioned)**: `npm run prod` / `npm run prod:open` - Stable releases for end users (`.../exec` URL)
 - **Quick Testing:** Use `npm run staging` to update @HEAD instantly without creating versions
-- **Production Release:** Use `npm run prod` to update your production (versioned) deployment
-- **Multiple Versions:** Use `npm run prod:new` to create additional versioned deployments
+- **Production Release:** Use `npm run prod` to update your production deployment
+- **Production Constraint:** Only one production deployment is maintained for simplicity
+- **Reset Production:** Use `npm run prod:new` to recreate production deployment from scratch
 - **View Deployments:** Run `npm run deployments` to see all active deployments
-- **Rollback:** Each versioned deployment is immutable; switch between versions in the Apps Script console
 
 ### Other Tips
 
