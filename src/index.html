@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,7 +9,42 @@
   <body>
     <div id="app">
       <h1>🚀 Apps Script + Vite Starter</h1>
-      <p>This is a static web page deployed as a Google Apps Script web app.</p>
+      <p>
+        This web app demonstrates Google Apps Script integration with mock
+        support for local development.
+      </p>
+
+      <div class="demo-section">
+        <h2>📊 Google Apps Script API Demo</h2>
+        <p>
+          <em
+            >In development mode, these buttons use mock data. In production,
+            they call real Apps Script functions.</em
+          >
+        </p>
+
+        <div class="button-group">
+          <button id="get-users" class="demo-btn">Get Users</button>
+          <button id="get-data" class="demo-btn">Get Spreadsheet Data</button>
+          <button id="save-data" class="demo-btn">Save Data</button>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div class="results">
+          <div class="result-section">
+            <h3>👥 Users:</h3>
+            <div id="users-container"></div>
+          </div>
+
+          <div class="result-section">
+            <h3>📋 Data:</h3>
+            <div id="data-container"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <script type="module" src="/client/main.js"></script>
   </body>
 </html>
