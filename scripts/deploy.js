@@ -1,30 +1,27 @@
 import {
-  getDeployments,
+  getDeploymentId,
   findVersionedDeployment,
   createDeployment,
   updateDeployment,
+  updateDeploymentIds,
 } from "./lib/clasp-utils.js";
 
 /**
- * Deploys to Apps Script (versioned deployment):
- * - Finds the first non-@HEAD deployment and updates it
- * - If only @HEAD exists or no deployments exist, creates a new versioned deployment
+ * Deploys to Apps Script (production deployment):
+ * - Updates existing production deployment if it exists
+ * - Creates new production deployment if it doesn't exist
  *
  * Note: @HEAD is automatically updated by `clasp push`, so we skip it here.
  */
 
-const deployments = getDeployments();
-const versionedDeployment = findVersionedDeployment(deployments);
+const deploymentId = getDeploymentId("PROD_DEPLOYMENT_ID", findVersionedDeployment);
 
-if (versionedDeployment) {
-  // Update existing versioned deployment
-  const deploymentId = versionedDeployment.deploymentId;
-  const version = versionedDeployment.deploymentConfig.versionNumber;
-  console.log(
-    `🔄 Updating versioned deployment: ${deploymentId} (@${version})`
-  );
+if (deploymentId) {
+  // Update existing production deployment
+  console.log(`🔄 Updating production deployment: ${deploymentId}`);
   updateDeployment(deploymentId);
 } else {
-  // No versioned deployment exists, create a new one
+  // No production deployment exists, create a new one
   createDeployment();
+  updateDeploymentIds();
 }

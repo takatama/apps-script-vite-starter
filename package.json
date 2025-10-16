@@ -9,6 +9,7 @@
     "setup": "node scripts/setup-rootdir.js",
     "prebuild": "npm run setup",
     "build": "vite build",
+    "postbuild": "node scripts/update-env.js",
     "staging": "npm run build && clasp push",
     "staging:open": "node scripts/open-staging.js",
     "prod": "npm run build && clasp push && node scripts/deploy.js",

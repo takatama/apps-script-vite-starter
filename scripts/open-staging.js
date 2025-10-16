@@ -1,22 +1,16 @@
-import {
-  getDeployments,
-  findHeadDeployment,
-  openWebApp,
-} from "./lib/clasp-utils.js";
+import { getDeploymentId, findHeadDeployment, openWebApp } from "./lib/clasp-utils.js";
 
 /**
  * Opens the @HEAD deployment web app in browser
  */
 
-const deployments = getDeployments();
-const headDeployment = findHeadDeployment(deployments);
+const deploymentId = getDeploymentId("STAGING_DEPLOYMENT_ID", findHeadDeployment);
 
-if (headDeployment) {
-  const deploymentId = headDeployment.deploymentId;
-  console.log(`🌐 Opening @HEAD deployment: ${deploymentId}`);
+if (deploymentId) {
+  console.log(`🌐 Opening staging deployment: ${deploymentId}`);
   openWebApp(deploymentId);
 } else {
-  console.error("❌ @HEAD deployment not found");
-  console.log('💡 Run "npm run staging" first to create @HEAD deployment');
+  console.error("❌ Staging deployment not found");
+  console.log('💡 Run "npm run staging" first to create staging deployment');
   process.exit(1);
 }

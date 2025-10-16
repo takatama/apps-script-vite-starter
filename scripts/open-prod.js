@@ -1,24 +1,16 @@
-import {
-  getDeployments,
-  findVersionedDeployment,
-  openWebApp,
-} from "./lib/clasp-utils.js";
+import { getDeploymentId, findVersionedDeployment, openWebApp } from "./lib/clasp-utils.js";
 
 /**
- * Opens the versioned (production) deployment web app in browser
- * Uses the same deployment that would be updated by the deploy script
+ * Opens the production deployment web app in browser
  */
 
-const deployments = getDeployments();
-const versionedDeployment = findVersionedDeployment(deployments);
+const deploymentId = getDeploymentId("PROD_DEPLOYMENT_ID", findVersionedDeployment);
 
-if (versionedDeployment) {
-  const deploymentId = versionedDeployment.deploymentId;
-  const version = versionedDeployment.deploymentConfig.versionNumber;
-  console.log(`🌐 Opening versioned deployment: ${deploymentId} (@${version})`);
+if (deploymentId) {
+  console.log(`🌐 Opening production deployment: ${deploymentId}`);
   openWebApp(deploymentId);
 } else {
-  console.error("❌ No versioned deployment found");
-  console.log('💡 Run "npm run prod" first to create a versioned deployment');
+  console.error("❌ Production deployment not found");
+  console.log('💡 Run "npm run prod" first to create production deployment');
   process.exit(1);
 }
