@@ -272,13 +272,12 @@ clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
 
 ```
 src/
-├── index.html                      # Main UI file (client-side)
+├── index.html                      # Main UI file
 ├── style.css                       # Styles
-├── lib/
-│   ├── googleScriptRun.js          # google.script.run wrapper with mock support
-│   └── googleScriptRunMockData.js  # Mock data for local development
-└── client/
-    └── main.js                     # Client application logic
+├── main.js                         # Application entry point
+└── lib/
+    ├── googleScriptRun.js          # google.script.run wrapper with mock support
+    └── googleScriptRunMockData.js  # Mock data for local development
 
 apps-script/
 ├── appsscript.json         # Apps Script manifest

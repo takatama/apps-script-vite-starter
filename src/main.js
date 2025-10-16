@@ -1,4 +1,4 @@
-import { googleScriptRun } from "../lib/googleScriptRun.js";
+import { googleScriptRun } from "./lib/googleScriptRun.js";
 
 /**
  * Main application logic
