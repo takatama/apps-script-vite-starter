@@ -9,6 +9,7 @@ Perfect for quickly creating web interfaces, landing pages, or dashboards on Goo
 - **Zero Framework:** Plain HTML and CSS—no unnecessary dependencies.
 - **Fast Build Tooling:** Powered by Vite for optimized development and production builds.
 - **Effortless Deployment:** Deploy as a free web app on Google's infrastructure using `clasp`.
+- **Mock google.script.run:** Develop locally with automatic mock data—works exactly like the real API.
 - **GitHub Ready:** Pre-configured as a template repository for instant setup.
 
 ---
@@ -101,7 +102,55 @@ clasp open-web-app
 
 ---
 
-## 📥 Clone an Existing Apps Script Project
+## � Using google.script.run API
+
+This template includes a `googleScriptRun` wrapper that works exactly like the official `google.script.run` API, but automatically uses mock data during local development.
+
+### Quick Example
+
+```javascript
+import { googleScriptRun } from "./client/googleScriptRun.js";
+
+// Method 1: Async/await (modern approach)
+const users = await googleScriptRun.getUserList();
+
+// Method 2: Callbacks (traditional google.script.run way)
+googleScriptRun
+  .withSuccessHandler((data) => console.log(data))
+  .withFailureHandler((error) => console.error(error))
+  .getUserList();
+```
+
+### Key Benefits
+
+- **Identical API**: Works exactly like `google.script.run`—no learning curve
+- **Auto-detection**: Automatically switches between mock and production
+- **Dual Style**: Supports both callback and async/await styles
+- **Local Development**: Test your UI without deploying to Apps Script
+
+### Adding Mock Data
+
+Edit `src/mocks/mockData.js` to add mock responses for your server functions:
+
+```javascript
+export const mockData = {
+  getUserList: [
+    { id: 1, name: "Alice", email: "alice@example.com" },
+    { id: 2, name: "Bob", email: "bob@example.com" },
+  ],
+
+  saveData: (data) => ({
+    success: true,
+    message: "Data saved successfully",
+  }),
+};
+```
+
+📖 **See [GOOGLE_SCRIPT_RUN_API.md](GOOGLE_SCRIPT_RUN_API.md) for detailed documentation and examples.**
+
+---
+
+## �📥 Clone an Existing Apps Script Project
 
 Already have a Google Apps Script project you'd like to bring into this template? No problem. Follow these steps.
 
@@ -223,19 +272,22 @@ clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
 
 ```
 src/
-├── index.html          # Main UI file (client-side)
-├── style.css           # Styles
-└── client/
-    └── main.ts         # Client entry point (optional)
+├── index.html              # Main UI file (client-side)
+├── style.css               # Styles
+├── client/
+│   ├── googleScriptRun.js  # google.script.run wrapper with mock support
+│   └── main.js             # Client application logic
+└── mocks/
+    └── mockData.js         # Mock data for local development
 
 apps-script/
-├── appsscript.json     # Apps Script manifest
-└── Code.js             # Server-side Apps Script code (doGet, doPost, etc.)
+├── appsscript.json         # Apps Script manifest
+└── Code.js                 # Server-side Apps Script code (doGet, doPost, etc.)
 
-public/                 # Static assets (copied as-is)
-build/                  # Compiled output (generated)
-dist/                   # Bundled files (generated)
-.clasp.json             # clasp configuration (created by clasp create/clone)
+public/                     # Static assets (copied as-is)
+dist/                       # Bundled files for deployment (generated)
+.clasp.json                 # clasp configuration (created by clasp create/clone)
+vite.config.js              # Vite build configuration
 ```
 
 > **Note**: After `clasp clone-script`, you'll need to move files from the root directory into their proper locations within this structure.
@@ -244,11 +296,14 @@ dist/                   # Bundled files (generated)
 
 ## 📖 Tips & Tricks
 
-- **Faster iterations:** Use `npm run dev` + `clasp open-web-app` to see live updates.
+- **Local Development:** Use `npm run dev` to develop with mock data. The `googleScriptRun` wrapper automatically detects when `google.script.run` is unavailable and uses mock data from `src/mocks/mockData.js`.
+- **Mock Data:** Add your own mock responses in `src/mocks/mockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
+- **Faster iterations:** Use `npm run dev` for rapid local development, then `npm run push` to deploy and test with real Apps Script integration.
+- **Live Updates:** Combine `npm run dev` with `clasp open-web-app` to preview your deployed app while making changes.
 - **Rollback:** Each `clasp create-deployment` creates a version; use Google's version history to revert.
 - **List deployments:** Run `clasp list-deployments` to see all active versions.
 - **Environments:** Use `.env.local` for local variables (not committed to git).
-- **Debugging:** Open your web app URL and use the browser console for client-side errors.
+- **Debugging:** Open your web app URL and use the browser console for client-side errors. In local dev mode, check the console for mock data messages.
 - **Enable APIs:** Use `clasp enable-api {apiName}` if your script needs access to Google services.
 
 ---

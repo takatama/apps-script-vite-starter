@@ -1,4 +1,4 @@
-import { appsScriptApi } from "./appsScriptApi.js";
+import { googleScriptRun } from "./googleScriptRun.js";
 
 /**
  * Main application logic
@@ -11,17 +11,17 @@ class App {
   async init() {
     console.log("🚀 Apps Script + Vite Starter initialized");
 
-    // Example usage of GAS API
+    // Example usage of google.script.run API
     this.setupExamples();
   }
 
   async setupExamples() {
-    // Example 1: Get user list
+    // Example 1: Get user list (async/await style)
     const userListBtn = document.getElementById("get-users");
     if (userListBtn) {
       userListBtn.addEventListener("click", async () => {
         try {
-          const users = await appsScriptApi.getUserList();
+          const users = await googleScriptRun.getUserList();
           console.log("Users:", users);
           this.displayUsers(users);
         } catch (error) {
@@ -30,26 +30,28 @@ class App {
       });
     }
 
-    // Example 2: Get spreadsheet data
+    // Example 2: Get spreadsheet data (callback style - traditional google.script.run way)
     const dataBtn = document.getElementById("get-data");
     if (dataBtn) {
-      dataBtn.addEventListener("click", async () => {
-        try {
-          const data = await appsScriptApi.getSpreadsheetData();
-          console.log("Spreadsheet data:", data);
-          this.displayData(data);
-        } catch (error) {
-          console.error("Error getting data:", error);
-        }
+      dataBtn.addEventListener("click", () => {
+        googleScriptRun
+          .withSuccessHandler((data) => {
+            console.log("Spreadsheet data:", data);
+            this.displayData(data);
+          })
+          .withFailureHandler((error) => {
+            console.error("Error getting data:", error);
+          })
+          .getSpreadsheetData();
       });
     }
 
-    // Example 3: Save data
+    // Example 3: Save data (async/await style)
     const saveBtn = document.getElementById("save-data");
     if (saveBtn) {
       saveBtn.addEventListener("click", async () => {
         try {
-          const result = await appsScriptApi.saveData({
+          const result = await googleScriptRun.saveData({
             test: "data",
             timestamp: new Date(),
           });
