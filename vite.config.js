@@ -3,9 +3,10 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
+  root: "src",
   build: {
     rollupOptions: {
-      input: "src/index.html",
+      input: "index.html",
     },
   },
   plugins: [
@@ -13,7 +14,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: "apps-script/*",
+          src: "../apps-script/*",
           dest: "./",
         },
       ],
