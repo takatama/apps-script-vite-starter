@@ -109,7 +109,7 @@ This template includes a `googleScriptRun` wrapper that works exactly like the o
 ### Quick Example
 
 ```javascript
-import { googleScriptRun } from "./client/googleScriptRun.js";
+import { googleScriptRun } from "./lib/googleScriptRun.js";
 
 // Method 1: Async/await (modern approach)
 const users = await googleScriptRun.getUserList();
@@ -274,8 +274,9 @@ clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
 src/
 ├── index.html              # Main UI file (client-side)
 ├── style.css               # Styles
+├── lib/
+│   └── googleScriptRun.js  # google.script.run wrapper with mock support
 ├── client/
-│   ├── googleScriptRun.js  # google.script.run wrapper with mock support
 │   └── main.js             # Client application logic
 └── mocks/
     └── mockData.js         # Mock data for local development

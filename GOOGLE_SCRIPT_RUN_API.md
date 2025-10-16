@@ -9,7 +9,7 @@ The API is identical to the official `google.script.run`, so if you already know
 ### Method 1: Callback Style (Traditional google.script.run way)
 
 ```javascript
-import { googleScriptRun } from "./client/googleScriptRun.js";
+import { googleScriptRun } from "./lib/googleScriptRun.js";
 
 // Get data with success/failure handlers
 googleScriptRun
@@ -32,7 +32,7 @@ googleScriptRun
 ### Method 2: Async/Await Style (Modern approach)
 
 ```javascript
-import { googleScriptRun } from "./client/googleScriptRun.js";
+import { googleScriptRun } from "./lib/googleScriptRun.js";
 
 async function loadData() {
   try {
