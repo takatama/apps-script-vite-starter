@@ -108,6 +108,7 @@ Already have a Google Apps Script project you'd like to bring into this template
 ### Prerequisites for Cloning
 
 You'll need:
+
 - Your Apps Script project's **Script ID** (found in the Google Apps Script editor URL: `script.google.com/macros/d/{SCRIPT_ID}/edit`)
 - This repository cloned and dependencies installed (steps 1–2 from Quick Start above)
 
@@ -247,13 +248,13 @@ npx n latest  # Uses the 'n' package to update Node
 
 The `clasp` CLI was updated in version 3.x. Here are the most commonly renamed commands:
 
-| 2.x                 | 3.x                    |
-|---------------------|------------------------|
-| `clasp create`      | `clasp create-script`  |
-| `clasp clone`       | `clasp clone-script`   |
-| `clasp open`        | `clasp open-script`    |
-| `clasp open --web`  | `clasp open-web-app`   |
-| `clasp deploy`      | `clasp create-deployment` |
+| 2.x                | 3.x                       |
+| ------------------ | ------------------------- |
+| `clasp create`     | `clasp create-script`     |
+| `clasp clone`      | `clasp clone-script`      |
+| `clasp open`       | `clasp open-script`       |
+| `clasp open --web` | `clasp open-web-app`      |
+| `clasp deploy`     | `clasp create-deployment` |
 
 See the [clasp documentation](https://github.com/google/clasp) for the full list of commands.
 
@@ -268,10 +269,12 @@ This template is open-source and available for personal and commercial use.
 ## ❓ Support
 
 For issues with:
+
 - **clasp:** See the [official clasp documentation](https://github.com/google/clasp)
 - **Vite:** Check the [Vite docs](https://vitejs.dev)
 - **Apps Script:** Review the [Google Apps Script guide](https://developers.google.com/apps-script)
 
-````
+```
 
 
+```
