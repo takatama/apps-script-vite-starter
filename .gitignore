@@ -1,0 +1,12 @@
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+
+# Environment files
+.env
+.env.*
+
+# clasp credentials
+.clasp.json
