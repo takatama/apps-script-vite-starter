@@ -48,22 +48,32 @@ cd your-new-repo
 npm install
 ```
 
-**Step 3: Create a New Apps Script Project**
+**Step 3: Connect to Apps Script**
 
-This links your local project to a new Google Apps Script project in your Drive:
+Choose one of the following options:
+
+**Option A: Create a new project**
 
 ```bash
-clasp create-script --type sheets --title "MyViteWebApp"
+clasp create-script --type webapp --title "MyViteWebApp"
 ```
 
-(Change `"MyViteWebApp"` to your preferred name. Other types include `docs`, `slides`, `forms`, `standalone`, and `webapp`.)
+(Other types: `sheets`, `docs`, `slides`, `forms`, `standalone`)
+
+**Option B: Clone an existing project**
+
+```bash
+clasp clone-script YOUR_SCRIPT_ID
+```
+
+Both commands create `.clasp.json`. The build script automatically configures `rootDir: "dist"`.
 
 **Step 4: Build and Deploy**
 
 Bundle your code and upload to Apps Script:
 
 ```bash
-npm run build && clasp push
+npm run push
 ```
 
 > If prompted to overwrite the manifest, answer `yes`.
@@ -73,7 +83,7 @@ npm run build && clasp push
 Make it public with:
 
 ```bash
-clasp deploy
+npm run deploy
 ```
 
 ✅ Done! Your web app is now live. The command outputs a URL ending in `/exec`.
@@ -88,16 +98,65 @@ See changes locally before pushing to Google:
 npm run dev
 ```
 
-Test updates on your development deployment (`.../dev` URL) by rebuilding and pushing—no need to run `clasp deploy` again:
+---
+
+## 🔄 Deployment Workflow
+
+Apps Script has two types of deployments:
+
+### **@HEAD Deployment (Development)**
+
+The `@HEAD` deployment is automatically updated whenever you run `clasp push`. Use this for testing:
 
 ```bash
-npm run build && clasp push
+npm run push  # Updates @HEAD deployment automatically
 ```
 
-Open the development URL in your browser:
+- **URL**: Ends with `.../dev`
+- **Use case**: Quick testing and development
+- **Updates**: Instant (no version creation needed)
+
+Open the development URL:
 
 ```bash
 clasp open-web-app
+```
+
+### **Versioned Deployment (Production)**
+
+Versioned deployments (`@1`, `@2`, `@3`...) are stable releases with version numbers:
+
+```bash
+npm run deploy  # Updates existing versioned deployment or creates new one
+```
+
+- **URL**: Ends with `.../exec`
+- **Use case**: Production releases for end users
+- **Updates**: Creates or updates a versioned deployment
+
+#### Additional Deployment Commands
+
+```bash
+npm run deploy:new          # Force create a new versioned deployment
+npm run deploy:interactive  # Choose which deployment to update
+npm run deployments         # List all deployments
+```
+
+### **Typical Workflow**
+
+```bash
+# 1. Develop and test locally
+npm run dev
+
+# 2. Push to @HEAD for quick testing
+npm run push
+
+# 3. Test the @HEAD deployment URL (ends with .../dev)
+
+# 4. When ready for production, update versioned deployment
+npm run deploy
+
+# 5. Share the production URL (ends with .../exec) with users
 ```
 
 ---
@@ -238,9 +297,9 @@ clasp pull
 Use `clasp create-script` to bootstrap a fresh Apps Script project:
 
 ```bash
-clasp create-script --type sheets --title "MyWebApp"
-npm run build && clasp push
-clasp create-deployment
+clasp create-script --type webapp --title "MyWebApp"
+npm run push              # Push to @HEAD
+npm run deploy            # Create first versioned deployment
 ```
 
 ### Continue Developing an Existing Project
@@ -248,22 +307,20 @@ clasp create-deployment
 ```bash
 clasp clone-script {SCRIPT_ID}  # or: clasp pull
 npm install
-npm run dev                      # local dev server
-npm run build && clasp push      # upload changes to Google
+npm run dev               # Local dev server
+npm run push              # Upload changes and update @HEAD
+npm run deploy            # Update versioned deployment
 ```
 
-### Publishing Updates
+### Manual Deployment Commands
 
-After making changes, create and deploy a new version:
-
-```bash
-clasp create-deployment  # creates a version and deploys
-```
-
-To redeploy a specific version:
+If you need fine-grained control, use clasp directly:
 
 ```bash
-clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}
+clasp list-deployments                                    # List all deployments
+clasp create-deployment                                   # Create new versioned deployment
+clasp update-deployment {DEPLOYMENT_ID}                   # Update specific deployment
+clasp update-deployment {DEPLOYMENT_ID} --versionNumber {VERSION}  # Deploy specific version
 ```
 
 ---
@@ -285,7 +342,7 @@ apps-script/
 
 public/                     # Static assets (copied as-is)
 dist/                       # Bundled files for deployment (generated)
-.clasp.json                 # clasp configuration (created by clasp create/clone)
+.clasp.json                 # clasp configuration (created by clasp create-script/clone-script)
 vite.config.js              # Vite build configuration
 ```
 
@@ -295,15 +352,29 @@ vite.config.js              # Vite build configuration
 
 ## 📖 Tips & Tricks
 
+### Development & Testing
+
 - **Local Development:** Use `npm run dev` to develop with mock data. The `googleScriptRun` wrapper automatically detects when `google.script.run` is unavailable and uses mock data from `src/lib/googleScriptRunMockData.js`.
 - **Mock Data:** Add your own mock responses in `src/lib/googleScriptRunMockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
-- **Faster iterations:** Use `npm run dev` for rapid local development, then `npm run push` to deploy and test with real Apps Script integration.
-- **Live Updates:** Combine `npm run dev` with `clasp open-web-app` to preview your deployed app while making changes.
-- **Rollback:** Each `clasp create-deployment` creates a version; use Google's version history to revert.
-- **List deployments:** Run `clasp list-deployments` to see all active versions.
-- **Environments:** Use `.env.local` for local variables (not committed to git).
+- **Faster iterations:** Use `npm run dev` for rapid local development, then `npm run push` to test with real Apps Script integration.
+
+### Deployment Management
+
+- **Understanding Deployments:**
+  - **@HEAD deployment**: Automatically updated by `clasp push`, accessible at `.../dev` URL
+  - **Versioned deployments**: Created/updated by `npm run deploy`, accessible at `.../exec` URL
+- **Quick Testing:** Use `npm run push` to update @HEAD instantly without creating versions
+- **Production Release:** Use `npm run deploy` to update your production (versioned) deployment
+- **Multiple Versions:** Use `npm run deploy:new` to create additional versioned deployments
+- **View Deployments:** Run `npm run deployments` or `clasp list-deployments` to see all active versions
+- **Rollback:** Each versioned deployment is immutable; switch between versions in the Apps Script console
+
+### Other Tips
+
+- **Live Updates:** Open your deployed @HEAD URL while running `npm run dev` to compare local vs. deployed behavior
+- **Environments:** Use `.env.local` for local variables (not committed to git)
 - **Debugging:** Open your web app URL and use the browser console for client-side errors. In local dev mode, check the console for mock data messages.
-- **Enable APIs:** Use `clasp enable-api {apiName}` if your script needs access to Google services.
+- **Enable APIs:** Use `clasp enable-api {apiName}` if your script needs access to Google services
 
 ---
 

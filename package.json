@@ -5,7 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "setup": "node scripts/setup-rootdir.js",
+    "prebuild": "npm run setup",
+    "build": "vite build",
+    "push": "npm run build && clasp push",
+    "deploy": "npm run push && node scripts/deploy.js",
+    "deploy:new": "npm run push && clasp create-deployment",
+    "deploy:interactive": "npm run push && node scripts/deploy-interactive.js",
+    "deployments": "clasp list-deployments"
   },
   "devDependencies": {
     "vite": "^7.1.10",

@@ -1,0 +1,10 @@
+{
+  "_comment": "This file shows the expected structure of .clasp.json",
+  "_note": "Use 'clasp create-script' or 'clasp clone-script' to generate .clasp.json automatically",
+  "_auto": "The build script will automatically add 'rootDir: dist' if missing",
+  "scriptId": "YOUR_SCRIPT_ID_FROM_CLASP",
+  "rootDir": "dist",
+  "scriptExtensions": [".js", ".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"]
+}
