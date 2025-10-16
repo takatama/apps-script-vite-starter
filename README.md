@@ -109,7 +109,7 @@ Already have a Google Apps Script project you'd like to bring into this template
 
 You'll need:
 
-- Your Apps Script project's **Script ID** (found in the Google Apps Script editor URL: `script.google.com/macros/d/{SCRIPT_ID}/edit`)
+- Your Apps Script project's **Script ID** (found in the Google Apps Script editor URL: `script.google.com/home/projects/{SCRIPT_ID}/edit`)
 - This repository cloned and dependencies installed (steps 1–2 from Quick Start above)
 
 ### Cloning Steps
