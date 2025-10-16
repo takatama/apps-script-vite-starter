@@ -1,5 +1,9 @@
-import { execSync } from "child_process";
 import * as readline from "readline";
+import {
+  getDeployments,
+  createDeployment,
+  updateDeployment,
+} from "./lib/clasp-utils.js";
 
 /**
  * Interactive deployment:
@@ -17,11 +21,7 @@ function question(query) {
 
 async function deploy() {
   try {
-    // Get list of deployments
-    const output = execSync("clasp list-deployments --json", {
-      encoding: "utf8",
-    });
-    const deployments = JSON.parse(output);
+    const deployments = getDeployments();
 
     if (deployments && deployments.length > 0) {
       console.log("\n📋 Existing deployments:");
@@ -46,18 +46,15 @@ async function deploy() {
         rl.close();
         process.exit(0);
       } else if (answer.toLowerCase() === "n") {
-        console.log("🆕 Creating new deployment...");
-        execSync("clasp create-deployment", { stdio: "inherit" });
-        console.log("✅ New deployment created");
+        rl.close();
+        createDeployment();
       } else {
         const index = parseInt(answer) - 1;
         if (index >= 0 && index < deployments.length) {
           const deploymentId = deployments[index].deploymentId;
           console.log(`🔄 Updating deployment ${deploymentId}...`);
-          execSync(`clasp update-deployment ${deploymentId}`, {
-            stdio: "inherit",
-          });
-          console.log("✅ Deployment updated");
+          rl.close();
+          updateDeployment(deploymentId);
         } else {
           console.log("❌ Invalid choice");
           rl.close();
@@ -66,11 +63,9 @@ async function deploy() {
       }
     } else {
       console.log("🆕 No existing deployments. Creating new deployment...");
-      execSync("clasp create-deployment", { stdio: "inherit" });
-      console.log("✅ New deployment created");
+      rl.close();
+      createDeployment();
     }
-
-    rl.close();
   } catch (error) {
     console.error("❌ Deployment failed:", error.message);
     rl.close();

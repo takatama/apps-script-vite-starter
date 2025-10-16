@@ -1,4 +1,9 @@
-import { execSync } from "child_process";
+import {
+  getDeployments,
+  findVersionedDeployment,
+  createDeployment,
+  updateDeployment,
+} from "./lib/clasp-utils.js";
 
 /**
  * Deploys to Apps Script (versioned deployment):
@@ -8,39 +13,18 @@ import { execSync } from "child_process";
  * Note: @HEAD is automatically updated by `clasp push`, so we skip it here.
  */
 
-try {
-  // Get list of deployments
-  const output = execSync("clasp list-deployments --json", {
-    encoding: "utf8",
-  });
-  const deployments = JSON.parse(output);
+const deployments = getDeployments();
+const versionedDeployment = findVersionedDeployment(deployments);
 
-  // Find first non-@HEAD deployment
-  const versionedDeployment = deployments?.find(
-    (d) =>
-      d.deploymentConfig?.versionNumber &&
-      d.deploymentConfig.versionNumber !== "HEAD"
+if (versionedDeployment) {
+  // Update existing versioned deployment
+  const deploymentId = versionedDeployment.deploymentId;
+  const version = versionedDeployment.deploymentConfig.versionNumber;
+  console.log(
+    `🔄 Updating versioned deployment: ${deploymentId} (@${version})`
   );
-
-  if (versionedDeployment) {
-    // Update existing versioned deployment
-    const deploymentId = versionedDeployment.deploymentId;
-    const version = versionedDeployment.deploymentConfig.versionNumber;
-    console.log(
-      `🔄 Updating versioned deployment: ${deploymentId} (@${version})`
-    );
-    execSync(`clasp update-deployment ${deploymentId}`, { stdio: "inherit" });
-    console.log("✅ Versioned deployment updated successfully");
-  } else {
-    // No versioned deployment exists, create a new one
-    console.log("🆕 Creating new versioned deployment...");
-    console.log(
-      "ℹ️  Note: @HEAD deployment is updated automatically by `clasp push`"
-    );
-    execSync("clasp create-deployment", { stdio: "inherit" });
-    console.log("✅ New versioned deployment created successfully");
-  }
-} catch (error) {
-  console.error("❌ Deployment failed:", error.message);
-  process.exit(1);
+  updateDeployment(deploymentId);
+} else {
+  // No versioned deployment exists, create a new one
+  createDeployment();
 }
