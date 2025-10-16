@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:open": "vite --open",
     "setup": "node scripts/setup-rootdir.js",
     "prebuild": "npm run setup",
     "build": "vite build",
-    "push": "npm run build && clasp push",
-    "deploy": "npm run push && node scripts/deploy.js",
-    "deploy:new": "npm run push && clasp create-deployment",
-    "deploy:interactive": "npm run push && node scripts/deploy-interactive.js",
+    "staging": "npm run build && clasp push",
+    "staging:open": "node scripts/open-staging.js",
+    "prod": "npm run build && clasp push && node scripts/deploy.js",
+    "prod:open": "node scripts/open-prod.js",
+    "prod:new": "npm run build && clasp push && clasp create-deployment",
+    "prod:interactive": "npm run build && clasp push && node scripts/deploy-interactive.js",
     "deployments": "clasp list-deployments"
   },
   "devDependencies": {

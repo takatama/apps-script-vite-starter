@@ -68,95 +68,119 @@ clasp clone-script YOUR_SCRIPT_ID
 
 Both commands create `.clasp.json`. The build script automatically configures `rootDir: "dist"`.
 
-**Step 4: Build and Deploy**
+**Step 4: Deploy to Staging**
 
-Bundle your code and upload to Apps Script:
+Bundle your code and upload to the staging (@HEAD) environment:
 
 ```bash
-npm run push
+npm run staging
 ```
 
 > If prompted to overwrite the manifest, answer `yes`.
 
-**Step 5: Publish the Web App**
-
-Make it public with:
+Open the staging web app in your browser:
 
 ```bash
-npm run deploy
+npm run staging:open
 ```
 
-✅ Done! Your web app is now live. The command outputs a URL ending in `/exec`.
+**Step 5: Deploy to Production**
+
+When ready for production, deploy to the versioned environment:
+
+```bash
+npm run prod
+```
+
+Open the production web app in your browser:
+
+```bash
+npm run prod:open
+```
+
+✅ Done! Your web app is now live.
 
 ---
 
 ### Local Development
 
-See changes locally before pushing to Google:
+Develop locally with live reload and mock data:
 
 ```bash
-npm run dev
+npm run dev          # Start Vite dev server
+npm run dev:open     # Start Vite dev server and open in browser
 ```
 
 ---
 
 ## 🔄 Deployment Workflow
 
-Apps Script has two types of deployments:
+This template uses a three-tier deployment strategy:
 
-### **@HEAD Deployment (Development)**
+### **Development (Local)**
 
-The `@HEAD` deployment is automatically updated whenever you run `clasp push`. Use this for testing:
+Local development with Vite dev server and mock data:
 
 ```bash
-npm run push  # Updates @HEAD deployment automatically
+npm run dev          # Start local server at http://localhost:5173
+npm run dev:open     # Start and automatically open in browser
+```
+
+- **Environment**: Local machine
+- **Use case**: Active development with hot reload
+- **Data**: Uses mock data from `src/lib/googleScriptRunMockData.js`
+
+### **Staging (@HEAD Deployment)**
+
+The `@HEAD` deployment is automatically updated when you push. Use this for testing with real Apps Script:
+
+```bash
+npm run staging        # Build and push to @HEAD
+npm run staging:open   # Open staging web app in browser
 ```
 
 - **URL**: Ends with `.../dev`
-- **Use case**: Quick testing and development
+- **Environment**: Google Apps Script @HEAD
+- **Use case**: Quick testing with real backend
 - **Updates**: Instant (no version creation needed)
 
-Open the development URL:
+### **Production (Versioned Deployment)**
+
+Versioned deployments (`@1`, `@2`, `@3`...) are stable releases for end users:
 
 ```bash
-clasp open-web-app
-```
-
-### **Versioned Deployment (Production)**
-
-Versioned deployments (`@1`, `@2`, `@3`...) are stable releases with version numbers:
-
-```bash
-npm run deploy  # Updates existing versioned deployment or creates new one
+npm run prod           # Build, push, and update versioned deployment
+npm run prod:open      # Open production web app in browser
 ```
 
 - **URL**: Ends with `.../exec`
+- **Environment**: Google Apps Script versioned deployment
 - **Use case**: Production releases for end users
 - **Updates**: Creates or updates a versioned deployment
 
-#### Additional Deployment Commands
+#### Additional Production Commands
 
 ```bash
-npm run deploy:new          # Force create a new versioned deployment
-npm run deploy:interactive  # Choose which deployment to update
-npm run deployments         # List all deployments
+npm run prod:new          # Force create a new versioned deployment
+npm run prod:interactive  # Choose which deployment to update
+npm run deployments       # List all deployments
 ```
 
 ### **Typical Workflow**
 
 ```bash
 # 1. Develop and test locally
-npm run dev
+npm run dev:open
 
-# 2. Push to @HEAD for quick testing
-npm run push
+# 2. Push to staging for testing with real backend
+npm run staging
+npm run staging:open     # Test in browser
 
-# 3. Test the @HEAD deployment URL (ends with .../dev)
+# 3. When ready for production, deploy versioned release
+npm run prod
+npm run prod:open        # Verify production deployment
 
-# 4. When ready for production, update versioned deployment
-npm run deploy
-
-# 5. Share the production URL (ends with .../exec) with users
+# 4. Share the production URL (ends with .../exec) with users
 ```
 
 ---
@@ -298,8 +322,8 @@ Use `clasp create-script` to bootstrap a fresh Apps Script project:
 
 ```bash
 clasp create-script --type webapp --title "MyWebApp"
-npm run push              # Push to @HEAD
-npm run deploy            # Create first versioned deployment
+npm run staging           # Deploy to staging
+npm run prod              # Create first production deployment
 ```
 
 ### Continue Developing an Existing Project
@@ -307,9 +331,11 @@ npm run deploy            # Create first versioned deployment
 ```bash
 clasp clone-script {SCRIPT_ID}  # or: clasp pull
 npm install
-npm run dev               # Local dev server
-npm run push              # Upload changes and update @HEAD
-npm run deploy            # Update versioned deployment
+npm run dev:open          # Local dev server
+npm run staging           # Deploy to staging
+npm run staging:open      # Test staging deployment
+npm run prod              # Deploy to production
+npm run prod:open         # Open production deployment
 ```
 
 ### Manual Deployment Commands
@@ -354,24 +380,25 @@ vite.config.js              # Vite build configuration
 
 ### Development & Testing
 
-- **Local Development:** Use `npm run dev` to develop with mock data. The `googleScriptRun` wrapper automatically detects when `google.script.run` is unavailable and uses mock data from `src/lib/googleScriptRunMockData.js`.
+- **Local Development:** Use `npm run dev:open` to develop with mock data and live reload
 - **Mock Data:** Add your own mock responses in `src/lib/googleScriptRunMockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
-- **Faster iterations:** Use `npm run dev` for rapid local development, then `npm run push` to test with real Apps Script integration.
+- **Faster iterations:** Develop locally with `npm run dev`, then test with real backend using `npm run staging`
 
 ### Deployment Management
 
-- **Understanding Deployments:**
-  - **@HEAD deployment**: Automatically updated by `clasp push`, accessible at `.../dev` URL
-  - **Versioned deployments**: Created/updated by `npm run deploy`, accessible at `.../exec` URL
-- **Quick Testing:** Use `npm run push` to update @HEAD instantly without creating versions
-- **Production Release:** Use `npm run deploy` to update your production (versioned) deployment
-- **Multiple Versions:** Use `npm run deploy:new` to create additional versioned deployments
-- **View Deployments:** Run `npm run deployments` or `clasp list-deployments` to see all active versions
+- **Three Environments:**
+  - **Development (local)**: `npm run dev` / `npm run dev:open` - Local Vite server with mock data
+  - **Staging (@HEAD)**: `npm run staging` / `npm run staging:open` - Quick testing with real Apps Script backend (`.../dev` URL)
+  - **Production (versioned)**: `npm run prod` / `npm run prod:open` - Stable releases for end users (`.../exec` URL)
+- **Quick Testing:** Use `npm run staging` to update @HEAD instantly without creating versions
+- **Production Release:** Use `npm run prod` to update your production (versioned) deployment
+- **Multiple Versions:** Use `npm run prod:new` to create additional versioned deployments
+- **View Deployments:** Run `npm run deployments` to see all active deployments
 - **Rollback:** Each versioned deployment is immutable; switch between versions in the Apps Script console
 
 ### Other Tips
 
-- **Live Updates:** Open your deployed @HEAD URL while running `npm run dev` to compare local vs. deployed behavior
+- **Auto-open Browser:** Use `:open` suffix (`dev:open`, `staging:open`, `prod:open`) to automatically open in browser
 - **Environments:** Use `.env.local` for local variables (not committed to git)
 - **Debugging:** Open your web app URL and use the browser console for client-side errors. In local dev mode, check the console for mock data messages.
 - **Enable APIs:** Use `clasp enable-api {apiName}` if your script needs access to Google services
