@@ -83,13 +83,7 @@ export function getDeployments() {
  * @returns {object|null} @HEAD deployment or null
  */
 export function findHeadDeployment(deployments) {
-  return (
-    deployments?.find(
-      (d) =>
-        !d.deploymentConfig?.versionNumber ||
-        d.deploymentConfig.versionNumber === "HEAD"
-    ) || null
-  );
+  return deployments?.find((d) => !d.versionNumber) || null;
 }
 
 /**
@@ -98,13 +92,7 @@ export function findHeadDeployment(deployments) {
  * @returns {object|null} Versioned deployment or null
  */
 export function findVersionedDeployment(deployments) {
-  return (
-    deployments?.find(
-      (d) =>
-        d.deploymentConfig?.versionNumber &&
-        d.deploymentConfig.versionNumber !== "HEAD"
-    ) || null
-  );
+  return deployments?.find((d) => d.versionNumber) || null;
 }
 
 /**
@@ -170,11 +158,7 @@ export function deleteDeployment(deploymentId) {
  */
 export function recreateProductionDeployment() {
   const deployments = getDeployments();
-  const versionedDeployments = deployments.filter(
-    (d) =>
-      d.deploymentConfig?.versionNumber &&
-      d.deploymentConfig.versionNumber !== "HEAD"
-  );
+  const versionedDeployments = deployments.filter((d) => d.versionNumber);
 
   if (versionedDeployments.length > 0) {
     console.log(
