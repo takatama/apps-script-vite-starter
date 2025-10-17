@@ -66,7 +66,28 @@ clasp create-script --type webapp --title "MyViteWebApp"
 clasp clone-script YOUR_SCRIPT_ID
 ```
 
-Both commands create `.clasp.json`. The build script automatically configures `rootDir: "dist"`.
+Both commands create `.clasp.json`. The first build automatically adds `rootDir: "dist"` via the `prebuild` hook.
+
+> **Advanced**: You can set `rootDir` immediately with `clasp create-script --rootDir dist` or manually edit `.clasp.json`.
+
+**Step 3.5: Initialize Deployment Configuration (First Time Only)**
+
+After creating or cloning your Apps Script project, push once to create deployments, then initialize the `.env` file:
+
+```bash
+npm run staging          # Create @HEAD deployment
+npm run prod             # Create production deployment
+npm run update-env       # Save deployment IDs to .env
+```
+
+This one-time setup stores deployment IDs in `.env` for faster subsequent operations. The `.env` file is git-ignored and contains:
+
+```bash
+STAGING_DEPLOYMENT_ID=AKfycbz...
+PROD_DEPLOYMENT_ID=AKfycby...
+```
+
+> **Note**: If you skip this step, deployment IDs will be auto-detected on first use, but running `update-env` explicitly is recommended for clarity.
 
 **Step 4: Deploy to Staging**
 
@@ -164,7 +185,30 @@ npm run prod:open      # Open production web app in browser
 ```bash
 npm run prod:new        # Recreate production deployment from scratch
 npm run deployments     # List all deployments
+npm run update-env      # Manually update .env with current deployment IDs
 ```
+
+### **Deployment Configuration (.env)**
+
+Deployment IDs are stored in `.env` for performance:
+
+```bash
+STAGING_DEPLOYMENT_ID=AKfycbz...
+PROD_DEPLOYMENT_ID=AKfycby...
+```
+
+**When to run `npm run update-env`:**
+
+- After creating a new Apps Script project (`clasp create-script`)
+- After cloning an existing project (`clasp clone-script`)
+- After recreating production deployment (`npm run prod:new`)
+- When deployment IDs change (rare)
+
+**Auto-detection:**
+If `.env` is missing or empty, deployment IDs are automatically detected and saved on first use. Running `update-env` explicitly is recommended for clarity.
+
+**Git:**
+`.env` is git-ignored. Use `.env.example` as a template for new clones.
 
 ### **Typical Workflow**
 
@@ -304,6 +348,18 @@ Organize your code according to this template's structure:
 npm run build && clasp push
 ```
 
+**Step 4: Initialize Deployment Configuration**
+
+After organizing files, initialize the `.env` configuration:
+
+```bash
+npm run staging          # Create/update @HEAD deployment
+npm run prod             # Create production deployment
+npm run update-env       # Save deployment IDs to .env
+```
+
+This ensures deployment IDs are cached for faster subsequent operations.
+
 ### Checking for Differences
 
 To sync the latest code from Google Apps Script:
@@ -324,6 +380,7 @@ Use `clasp create-script` to bootstrap a fresh Apps Script project:
 clasp create-script --type webapp --title "MyWebApp"
 npm run staging           # Deploy to staging
 npm run prod              # Create first production deployment
+npm run update-env        # Save deployment IDs to .env (recommended)
 ```
 
 ### Continue Developing an Existing Project
