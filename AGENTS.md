@@ -2,40 +2,48 @@
 
 ## Project Structure & Module Organization
 
-- `src/server` houses the Apps Script entry points. Expose functions through `src/server/index.ts` and keep helper utilities in `src/server/lib/`.
-- `src/client` contains the Vite bundle; `src/client/main.ts` bootstraps the UI and imports shared modules.
-- `src/shared` collects logic reused on both sides (e.g., validation or constants) to avoid duplicated code.
-- `appsscript.json` tracks deployment settings; edit only the human-readable fields such as `timeZone` or `exceptionLogging`.
+- `src/index.html` is the main UI entry point bundled by Vite into a single HTML file.
+- `src/main.js` bootstraps the client-side application logic.
+- `src/style.css` contains global styles.
+- `src/lib/googleScriptRun.js` is the `google.script.run` wrapper — it automatically switches between mock data locally and the real API in production. Always use this instead of calling `google.script.run` directly.
+- `src/lib/googleScriptRunMockData.js` holds mock responses for local development. Dynamic values (e.g., timestamps) must be implemented as functions, not plain values.
+- `apps-script/Code.js` contains server-side Apps Script functions (`doGet`, `doPost`, etc.).
+- `apps-script/appsscript.json` tracks the Apps Script manifest; edit only human-readable fields such as `timeZone` or `exceptionLogging`.
+- `scripts/` holds Node.js deployment utilities; shared logic lives in `scripts/lib/clasp-utils.js`.
 - `public/` stores static assets copied verbatim into the final deployment bundle.
+- `dist/` is the build output directory that clasp pushes to Apps Script (do not edit manually).
 
 ## Build, Test, and Development Commands
 
-- `npm install` initializes dependencies and prepares clasp for Apps Script sync.
+- `npm install` installs dependencies.
 - `npm run dev` / `npm run dev:open` starts the Vite dev server for local development with mock data.
-- `npm run setup` ensures `.clasp.json` has `rootDir: "dist"` configured (runs automatically before build).
-- `npm run build` emits production bundles to `dist/`.
-- `npm run staging` / `npm run staging:open` builds and pushes to staging (@HEAD) environment.
-- `npm run prod` / `npm run prod:open` builds, pushes, and updates the single production (versioned) deployment.
-- `npm run prod:new` recreates production deployment from scratch (deletes existing and creates new).
+- `npm run setup` ensures `.clasp.json` has `rootDir: "dist"` configured (runs automatically before build via `prebuild`).
+- `npm run build` bundles the client into `dist/`.
+- `npm run stg` / `npm run stg:open` builds, pushes to staging (@HEAD), and opens the staging URL.
+- `npm run prod` / `npm run prod:open` builds, pushes, updates the versioned production deployment, and opens the production URL.
+- `npm run prod:new` recreates the production deployment from scratch (deletes existing and creates new).
 - `npm run deployments` lists all active deployments.
+- `npm run update-env` syncs current deployment IDs into `.env`.
 
 ## Coding Style & Naming Conventions
 
-- TypeScript is linted by ESLint and formatted by Prettier (2-space indent, single quotes, trailing commas). Use `npm run lint -- --fix` to auto-correct.
-- Export Google-exposed functions in PascalCase to map cleanly onto Apps Script menus; keep internal helpers camelCase.
-- Name React/Svelte/Vue components in PascalCase and place them inside `src/client/components/`.
-- Keep environment variables in `.env.local`, prefixed with `VITE_` (e.g., `VITE_API_BASE_URL=https://...`).
+- The project uses plain JavaScript (no TypeScript, no framework). Keep it that way unless explicitly migrating.
+- Use 2-space indentation and double quotes for HTML attributes; follow the existing style in each file.
+- Server-side Apps Script functions exposed to the client should be camelCase (e.g., `getUserList`).
+- Never use `innerHTML` with server-returned or user-supplied data. Use `escapeHtml()` from `src/main.js` or set `textContent` directly.
+- All deployment scripts in `scripts/` must wrap top-level logic in `async function main()` and call `main()` at the end.
 
 ## Testing Guidelines
 
-- Co-locate unit tests as `*.test.ts` beside the source or within `tests/` when shared fixtures are needed.
-- Run `npm run test -- --coverage` and target ≥80% statements; document gaps in the PR if coverage dips.
-- Use the stubs in `tests/mocks/appsScript.ts` when code touches Apps Script globals like `SpreadsheetApp`.
+- There is no automated test suite. Verify changes manually:
+  - Local: `npm run dev:open` — confirm mock data loads and UI behaves correctly.
+  - Staging: `npm run stg` then `npm run stg:open` — confirm real Apps Script backend responds.
+  - Production: `npm run prod` then `npm run prod:open` — confirm production deployment is updated.
 
 ## Commit & Pull Request Guidelines
 
-- Follow Conventional Commits (`feat:`, `fix:`, `chore:`) to keep the changelog script-friendly.
-- PRs must summarize behaviour changes, reference related issues, and list manual verification steps (e.g., `npm run push` to staging).
+- Follow Conventional Commits (`feat:`, `fix:`, `chore:`) to keep the history readable.
+- PRs must summarize behaviour changes and list manual verification steps (e.g., `npm run stg` to staging, `npm run prod` to production).
 - Attach screenshots or GIFs for UI updates and include the clasp deployment ID when relevant.
 
 ## Deployment & Access
@@ -44,10 +52,7 @@
 - The `rootDir: "dist"` setting is automatically configured by the `setup` script to ensure clasp pushes from the correct directory.
 - Three deployment environments:
   - **Development (local)**: `npm run dev:open` - Local Vite server with mock data
-  - **Staging (@HEAD)**: `npm run staging:open` - Quick testing with real backend (`.../dev` URL)
-  - **Production (versioned)**: `npm run prod:open` - Stable releases for end users (`.../exec` URL)
-- Use `npm run staging` to push to @HEAD for quick testing without creating versions.
-- Use `npm run prod` for production releases; it updates the single production deployment.
-- **Constraint**: Only one production deployment is maintained for simplicity.
-- Use `npm run prod:new` to recreate production deployment from scratch.
-- Use `npm run deployments` to view all deployment IDs and URLs.
+  - **Staging (@HEAD)**: `npm run stg` / `npm run stg:open` - Quick testing with real backend (`.../dev` URL)
+  - **Production (versioned)**: `npm run prod` / `npm run prod:open` - Stable releases for end users (`.../exec` URL)
+- Only one production deployment is maintained for simplicity. Use `npm run prod:new` to recreate it.
+- Deployment IDs are cached in `.env` (git-ignored). Run `npm run update-env` after any structural deployment change.

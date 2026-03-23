@@ -1,5 +1,14 @@
 import { googleScriptRun } from "./lib/googleScriptRun.js";
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /**
  * Main application logic
  */
@@ -71,7 +80,7 @@ class App {
         .map(
           (user) =>
             `<div class="user-item">
-          <strong>${user.name}</strong> - ${user.email}
+          <strong>${escapeHtml(user.name)}</strong> - ${escapeHtml(user.email)}
         </div>`
         )
         .join("");
@@ -99,7 +108,7 @@ class App {
             ${headers
               .map(
                 (h) =>
-                  `<th style="border: 1px solid #ccc; padding: 8px;">${h}</th>`
+                  `<th style="border: 1px solid #ccc; padding: 8px;">${escapeHtml(h)}</th>`
               )
               .join("")}
           </tr>
@@ -112,7 +121,7 @@ class App {
               ${row
                 .map(
                   (cell) =>
-                    `<td style="border: 1px solid #ccc; padding: 8px;">${cell}</td>`
+                    `<td style="border: 1px solid #ccc; padding: 8px;">${escapeHtml(cell)}</td>`
                 )
                 .join("")}
             </tr>`
@@ -126,7 +135,11 @@ class App {
   showMessage(message) {
     const container = document.getElementById("message-container");
     if (container) {
-      container.innerHTML = `<div style="color: green; margin: 10px 0;">${message}</div>`;
+      const div = document.createElement("div");
+      div.style.cssText = "color: green; margin: 10px 0;";
+      div.textContent = message;
+      container.innerHTML = "";
+      container.appendChild(div);
       setTimeout(() => {
         container.innerHTML = "";
       }, 3000);

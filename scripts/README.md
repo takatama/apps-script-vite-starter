@@ -105,7 +105,7 @@ Opens the @HEAD deployment web app.
 
 - Gets staging deployment ID from `.env` (auto-detects if not set)
 - Opens it in the default browser
-- Used by: `npm run staging:open`
+- Used by: `npm run stg:open`
 
 ### `open-prod.js`
 

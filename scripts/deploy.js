@@ -14,14 +14,18 @@ import {
  * Note: @HEAD is automatically updated by `clasp push`, so we skip it here.
  */
 
-const deploymentId = getDeploymentId("PROD_DEPLOYMENT_ID", findVersionedDeployment);
+async function main() {
+  const deploymentId = getDeploymentId("PROD_DEPLOYMENT_ID", findVersionedDeployment);
 
-if (deploymentId) {
-  // Update existing production deployment
-  console.log(`🔄 Updating production deployment: ${deploymentId}`);
-  updateDeployment(deploymentId);
-} else {
-  // No production deployment exists, create a new one
-  createDeployment();
-  updateDeploymentIds();
+  if (deploymentId) {
+    // Update existing production deployment
+    console.log(`🔄 Updating production deployment: ${deploymentId}`);
+    updateDeployment(deploymentId);
+  } else {
+    // No production deployment exists, create a new one
+    createDeployment();
+    updateDeploymentIds();
+  }
 }
+
+main();

@@ -9,5 +9,9 @@ import { recreateProductionDeployment } from "./lib/clasp-utils.js";
  * Use this when you want to start fresh with a new production deployment.
  */
 
-console.log("⚠️  Recreating production deployment...");
-recreateProductionDeployment();
+async function main() {
+  console.log("⚠️  Recreating production deployment...");
+  recreateProductionDeployment();
+}
+
+main();
