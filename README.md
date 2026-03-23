@@ -75,7 +75,7 @@ Both commands create `.clasp.json`. The first build automatically adds `rootDir:
 After creating or cloning your Apps Script project, push once to create deployments, then initialize the `.env` file:
 
 ```bash
-npm run staging          # Create @HEAD deployment
+npm run stg          # Create @HEAD deployment
 npm run prod             # Create production deployment
 npm run update-env       # Save deployment IDs to .env
 ```
@@ -94,7 +94,7 @@ PROD_DEPLOYMENT_ID=AKfycby...
 Bundle your code and upload to the staging (@HEAD) environment:
 
 ```bash
-npm run staging
+npm run stg
 ```
 
 > If prompted to overwrite the manifest, answer `yes`.
@@ -102,7 +102,7 @@ npm run staging
 Open the staging web app in your browser:
 
 ```bash
-npm run staging:open
+npm run stg:open
 ```
 
 **Step 5: Deploy to Production**
@@ -156,8 +156,8 @@ npm run dev:open     # Start and automatically open in browser
 The `@HEAD` deployment is automatically updated when you push. Use this for testing with real Apps Script:
 
 ```bash
-npm run staging        # Build and push to @HEAD
-npm run staging:open   # Open staging web app in browser
+npm run stg        # Build and push to @HEAD
+npm run stg:open   # Open staging web app in browser
 ```
 
 - **URL**: Ends with `.../dev`
@@ -217,8 +217,8 @@ If `.env` is missing or empty, deployment IDs are automatically detected and sav
 npm run dev:open
 
 # 2. Push to staging for testing with real backend
-npm run staging
-npm run staging:open     # Test in browser
+npm run stg
+npm run stg:open     # Test in browser
 
 # 3. When ready for production, deploy versioned release
 npm run prod
@@ -353,7 +353,7 @@ npm run build && clasp push
 After organizing files, initialize the `.env` configuration:
 
 ```bash
-npm run staging          # Create/update @HEAD deployment
+npm run stg          # Create/update @HEAD deployment
 npm run prod             # Create production deployment
 npm run update-env       # Save deployment IDs to .env
 ```
@@ -378,7 +378,7 @@ Use `clasp create-script` to bootstrap a fresh Apps Script project:
 
 ```bash
 clasp create-script --type webapp --title "MyWebApp"
-npm run staging           # Deploy to staging
+npm run stg           # Deploy to staging
 npm run prod              # Create first production deployment
 npm run update-env        # Save deployment IDs to .env (recommended)
 ```
@@ -389,8 +389,8 @@ npm run update-env        # Save deployment IDs to .env (recommended)
 clasp clone-script {SCRIPT_ID}  # or: clasp pull
 npm install
 npm run dev:open          # Local dev server
-npm run staging           # Deploy to staging
-npm run staging:open      # Test staging deployment
+npm run stg           # Deploy to staging
+npm run stg:open      # Test staging deployment
 npm run prod              # Deploy to production
 npm run prod:open         # Open production deployment
 ```
@@ -439,15 +439,15 @@ vite.config.js              # Vite build configuration
 
 - **Local Development:** Use `npm run dev:open` to develop with mock data and live reload
 - **Mock Data:** Add your own mock responses in `src/lib/googleScriptRunMockData.js` for any server functions you create. This allows full client-side development without deploying to Apps Script.
-- **Faster iterations:** Develop locally with `npm run dev`, then test with real backend using `npm run staging`
+- **Faster iterations:** Develop locally with `npm run dev`, then test with real backend using `npm run stg`
 
 ### Deployment Management
 
 - **Three Environments:**
   - **Development (local)**: `npm run dev` / `npm run dev:open` - Local Vite server with mock data
-  - **Staging (@HEAD)**: `npm run staging` / `npm run staging:open` - Quick testing with real Apps Script backend (`.../dev` URL)
+  - **Staging (@HEAD)**: `npm run stg` / `npm run stg:open` - Quick testing with real Apps Script backend (`.../dev` URL)
   - **Production (versioned)**: `npm run prod` / `npm run prod:open` - Stable releases for end users (`.../exec` URL)
-- **Quick Testing:** Use `npm run staging` to update @HEAD instantly without creating versions
+- **Quick Testing:** Use `npm run stg` to update @HEAD instantly without creating versions
 - **Production Release:** Use `npm run prod` to update your production deployment
 - **Production Constraint:** Only one production deployment is maintained for simplicity
 - **Reset Production:** Use `npm run prod:new` to recreate production deployment from scratch
@@ -455,7 +455,7 @@ vite.config.js              # Vite build configuration
 
 ### Other Tips
 
-- **Auto-open Browser:** Use `:open` suffix (`dev:open`, `staging:open`, `prod:open`) to automatically open in browser
+- **Auto-open Browser:** Use `:open` suffix (`dev:open`, `stg:open`, `prod:open`) to automatically open in browser
 - **Environments:** Use `.env.local` for local variables (not committed to git)
 - **Debugging:** Open your web app URL and use the browser console for client-side errors. In local dev mode, check the console for mock data messages.
 - **Enable APIs:** Use `clasp enable-api {apiName}` if your script needs access to Google services

@@ -12,7 +12,7 @@ async function main() {
     openWebApp(deploymentId);
   } else {
     console.error("❌ Staging deployment not found");
-    console.log('💡 Run "npm run staging" first to create staging deployment');
+    console.log('💡 Run "npm run stg" first to create staging deployment');
     process.exit(1);
   }
 }

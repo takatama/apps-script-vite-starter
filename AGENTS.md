@@ -14,7 +14,7 @@
 - `npm run dev` / `npm run dev:open` starts the Vite dev server for local development with mock data.
 - `npm run setup` ensures `.clasp.json` has `rootDir: "dist"` configured (runs automatically before build).
 - `npm run build` emits production bundles to `dist/`.
-- `npm run staging` / `npm run staging:open` builds and pushes to staging (@HEAD) environment.
+- `npm run stg` / `npm run stg:open` builds and pushes to staging (@HEAD) environment.
 - `npm run prod` / `npm run prod:open` builds, pushes, and updates the single production (versioned) deployment.
 - `npm run prod:new` recreates production deployment from scratch (deletes existing and creates new).
 - `npm run deployments` lists all active deployments.
@@ -44,9 +44,9 @@
 - The `rootDir: "dist"` setting is automatically configured by the `setup` script to ensure clasp pushes from the correct directory.
 - Three deployment environments:
   - **Development (local)**: `npm run dev:open` - Local Vite server with mock data
-  - **Staging (@HEAD)**: `npm run staging:open` - Quick testing with real backend (`.../dev` URL)
+  - **Staging (@HEAD)**: `npm run stg:open` - Quick testing with real backend (`.../dev` URL)
   - **Production (versioned)**: `npm run prod:open` - Stable releases for end users (`.../exec` URL)
-- Use `npm run staging` to push to @HEAD for quick testing without creating versions.
+- Use `npm run stg` to push to @HEAD for quick testing without creating versions.
 - Use `npm run prod` for production releases; it updates the single production deployment.
 - **Constraint**: Only one production deployment is maintained for simplicity.
 - Use `npm run prod:new` to recreate production deployment from scratch.

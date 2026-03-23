@@ -63,7 +63,7 @@ See [AGENTS.md](./AGENTS.md) for the full command list.
 | Command | Purpose |
 |---------|---------|
 | `npm run dev` | Local dev server with mock data |
-| `npm run staging` | Build + push to @HEAD |
+| `npm run stg` | Build + push to @HEAD |
 | `npm run prod` | Build + push + update versioned deployment |
 | `npm run prod:new` | Recreate production deployment from scratch |
 | `npm run update-env` | Sync deployment IDs to .env |
