@@ -20,11 +20,11 @@ export const mockData = {
   ],
 
   // Example: Mock response for saving data
-  saveData: {
+  saveData: (data) => ({
     success: true,
     message: "Data saved successfully",
     timestamp: new Date().toISOString(),
-  },
+  }),
 
   // Example: Mock settings data
   getSettings: {
