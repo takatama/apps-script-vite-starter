@@ -229,7 +229,7 @@ npm run prod:open        # Verify production deployment
 
 ---
 
-## � Using google.script.run API
+## 🔌 Using google.script.run API
 
 This template includes a `googleScriptRun` wrapper that works exactly like the official `google.script.run` API, but automatically uses mock data during local development.
 
@@ -277,7 +277,29 @@ export const mockData = {
 
 ---
 
-## �📥 Clone an Existing Apps Script Project
+## 📊 Using a Spreadsheet as a Database
+
+This template can use a Google Spreadsheet as a simple database, with staging and production each pointed at their own spreadsheet — no container binding required; the script stays standalone and opens the spreadsheet by ID.
+
+### Setup
+
+1. Create two Google Spreadsheets: one for staging, one for production.
+2. In the Apps Script editor, go to **Project Settings > Script Properties** and add:
+   - `STG_SPREADSHEET_ID` — the ID of your staging spreadsheet
+   - `PROD_SPREADSHEET_ID` — the ID of your production spreadsheet
+
+   The ID is the long string in the spreadsheet's URL: `docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit`.
+
+### How it works
+
+- The environment is detected at runtime from the web app URL: a URL ending in `/dev` (the @HEAD staging deployment) is treated as staging, everything else (including the `/exec` production URL) is treated as production.
+- Executions that have no web app URL, such as time-driven triggers, are treated as production.
+- Server code opens the correct spreadsheet via the private `getSpreadsheet_()` helper in `apps-script/Code.js`, which reads the appropriate Script Property and calls `SpreadsheetApp.openById()`.
+- If `STG_SPREADSHEET_ID` / `PROD_SPREADSHEET_ID` aren't set yet, the `getSpreadsheetData()` example falls back to built-in sample data, so the starter still works with zero configuration.
+
+---
+
+## 📥 Clone an Existing Apps Script Project
 
 Already have a Google Apps Script project you'd like to bring into this template? No problem. Follow these steps.
 
