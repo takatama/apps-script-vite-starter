@@ -87,7 +87,19 @@ function getSpreadsheetData() {
 
   const spreadsheet = getSpreadsheet_();
   const sheet = spreadsheet.getSheets()[0];
-  return sheet.getDataRange().getValues();
+  return serializeSheetValues_(sheet.getDataRange().getValues());
+}
+
+/**
+ * Converts sheet values into types supported by google.script.run.
+ *
+ * @param {Array<Array<*>>} values The values returned by Range.getValues().
+ * @return {Array<Array<*>>} A copy with Date values converted to ISO strings.
+ */
+function serializeSheetValues_(values) {
+  return values.map((row) =>
+    row.map((value) => (value instanceof Date ? value.toISOString() : value))
+  );
 }
 
 /**
