@@ -7,7 +7,7 @@
 - `src/style.css` contains global styles.
 - `src/lib/googleScriptRun.js` is the `google.script.run` wrapper — it automatically switches between mock data locally and the real API in production. Always use this instead of calling `google.script.run` directly.
 - `src/lib/googleScriptRunMockData.js` holds mock responses for local development. Dynamic values (e.g., timestamps) must be implemented as functions, not plain values.
-- `apps-script/Code.js` contains server-side Apps Script functions (`doGet`, `doPost`, etc.).
+- `apps-script/Code.js` contains server-side Apps Script functions (`doGet`, `doPost`, etc.). Server code must access spreadsheets only through the `getSpreadsheet_()` helper — never by hardcoding a spreadsheet ID. It picks the right spreadsheet using the `STG_SPREADSHEET_ID` / `PROD_SPREADSHEET_ID` Script Properties, keeping staging (`/dev`) and production (`/exec`) data separate.
 - `apps-script/appsscript.json` tracks the Apps Script manifest; edit only human-readable fields such as `timeZone` or `exceptionLogging`.
 - `scripts/` holds Node.js deployment utilities; shared logic lives in `scripts/lib/clasp-utils.js`.
 - `public/` stores static assets copied verbatim into the final deployment bundle.
@@ -32,6 +32,7 @@
 - Server-side Apps Script functions exposed to the client should be camelCase (e.g., `getUserList`).
 - Never use `innerHTML` with server-returned or user-supplied data. Use `escapeHtml()` from `src/main.js` or set `textContent` directly.
 - All deployment scripts in `scripts/` must wrap top-level logic in `async function main()` and call `main()` at the end.
+- Private Apps Script helpers (not callable via `google.script.run`) use a trailing underscore, e.g. `getSpreadsheet_()`, `getEnvironment_()`.
 
 ## Testing Guidelines
 

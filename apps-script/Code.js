@@ -8,6 +8,51 @@ function doGet() {
 }
 
 /**
+ * Determines the current deployment environment based on the web app URL.
+ *
+ * Executions that have no web app URL (e.g., time-driven triggers) are
+ * treated as production.
+ *
+ * @return {string} "staging" or "production"
+ */
+function getEnvironment_() {
+  const url = ScriptApp.getService().getUrl();
+  if (url && url.endsWith("/dev")) {
+    return "staging";
+  }
+  return "production";
+}
+
+/**
+ * Returns the Script Property key holding the spreadsheet ID for the
+ * current environment.
+ *
+ * @return {string} "STG_SPREADSHEET_ID" or "PROD_SPREADSHEET_ID"
+ */
+function getSpreadsheetIdKey_() {
+  return getEnvironment_() === "staging" ? "STG_SPREADSHEET_ID" : "PROD_SPREADSHEET_ID";
+}
+
+/**
+ * Opens the environment-appropriate Spreadsheet using IDs stored in
+ * Script Properties (STG_SPREADSHEET_ID / PROD_SPREADSHEET_ID).
+ *
+ * @return {Spreadsheet} The opened Spreadsheet for the current environment.
+ */
+function getSpreadsheet_() {
+  const propertyKey = getSpreadsheetIdKey_();
+  const id = PropertiesService.getScriptProperties().getProperty(propertyKey);
+
+  if (!id) {
+    throw new Error(
+      `Missing Script Property "${propertyKey}". Set it in the Apps Script editor under Project Settings > Script Properties.`
+    );
+  }
+
+  return SpreadsheetApp.openById(id);
+}
+
+/**
  * Example: Get user list from a spreadsheet or database
  */
 function getUserList() {
@@ -21,15 +66,28 @@ function getUserList() {
 
 /**
  * Example: Get spreadsheet data
+ *
+ * Falls back to hardcoded sample data if the environment's spreadsheet ID
+ * property is not configured, so the starter works with zero configuration.
  */
 function getSpreadsheetData() {
-  // In real implementation, this would use SpreadsheetApp
-  return [
-    ["Product", "Price", "Stock"],
-    ["Widget A", "$10.99", "50"],
-    ["Widget B", "$15.99", "25"],
-    ["Widget C", "$8.99", "100"],
-  ];
+  const isConfigured = !!PropertiesService.getScriptProperties().getProperty(
+    getSpreadsheetIdKey_()
+  );
+
+  if (!isConfigured) {
+    // Sample data — replace once STG_SPREADSHEET_ID / PROD_SPREADSHEET_ID are set.
+    return [
+      ["Product", "Price", "Stock"],
+      ["Widget A", "$10.99", "50"],
+      ["Widget B", "$15.99", "25"],
+      ["Widget C", "$8.99", "100"],
+    ];
+  }
+
+  const spreadsheet = getSpreadsheet_();
+  const sheet = spreadsheet.getSheets()[0];
+  return sheet.getDataRange().getValues();
 }
 
 /**
