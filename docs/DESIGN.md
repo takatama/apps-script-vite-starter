@@ -283,10 +283,11 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 - `output.banner: '/** @OnlyCurrentDoc */'`. It survives the build (V).
 - `output.footer` generates one **top-level function per export**, except `default`:
   - `doGet` and `doPost` pass through: `function doGet(e){ return __app.doGet(e); }`. They are public by nature, because anyone with access can hit the URL with any parameters. Treat `e` as untrusted input, and keep `doGet` free of side effects.
-  - The simple-trigger names `onOpen`, `onEdit`, `onInstall` and `onSelectionChange` pass through **with an authenticity guard**: `function onEdit(e){ __trigger(e); return __app.onEdit(e); }`.
+  - The simple-trigger names `onOpen`, `onEdit` and `onSelectionChange` pass through **with an authenticity guard**: `function onEdit(e){ __trigger(e); return __app.onEdit(e); }`.
     - `__trigger` throws unless `e.source` (or `e.range`) is a genuine Apps Script object, i.e. it has methods such as `getId`.
     - This works because `google.script.run` cannot carry functions: its argument check rejects them, so a forged event can only be plain JSON (D for the argument check; U for the event shapes, §10).
     - Without the guard, any web-app user could call a state-changing trigger with arbitrary arguments and the deployer's privileges. Apps Script hides only `_`-suffixed and non-top-level functions (Codex review).
+  - **`onInstall` is refused:** exporting it fails the build. Its genuine event carries only `authMode` (D), so `__trigger` would reject every real installation. Editor add-ons are out of scope for this starter, and an unguarded stub would be a public endpoint (Codex review).
   - Every other export becomes `function name(){ return JSON.stringify(__app.name.apply(this, arguments)); }`.
   - Only these stubs and `__app` are global, so internal helpers are not callable (V in Node vm). **Every stub is a public endpoint**, including the pass-throughs.
 - **Why JSON strings:** the transport is identical in dev, tests and GAS by construction. A Date leaked from `getValues()` arrives as an ISO string instead of nulling the whole result. This generalizes upstream PR #4.
@@ -744,3 +745,4 @@ Expect a one-time Chrome Local Network Access prompt.
   - All generated top-level stubs, including `doGet`/`doPost`/trigger pass-throughs, are treated as public. Simple triggers get the `__trigger` authenticity guard, and dev and tests mirror GAS (Codex P1).
   - Live verification is approved on the owner's Workspace account with organization-only sharing.
   - The local seed-data format (JSON vs CSV) is on hold for discussion (§11.1).
+- **2026-10-06 (2):** `onInstall` is removed from the guarded pass-throughs and exporting it fails the build, because its genuine event has only `authMode` (Codex P2).
