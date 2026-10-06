@@ -1,6 +1,6 @@
 # Redesign of apps-script-vite-starter
 
-- **Status:** the design was agreed in discussion with the owner on 2026-10-05. Implementation has **not** started.
+- **Status:** the design was agreed in discussion with the owner on 2026-10-05 and revised on 2026-10-06, after owner decisions and the Codex review of PR #6 (see "Revision history" at the end). Implementation has **not** started.
 - **Purpose of this document:** it is self-contained. A person or an AI agent should be able to continue the work from here without the original conversation.
 - **Evidence:** the facts below come from a research pass. It covered Google's served client JS, official docs, the clasp 3.4.1 source, and hands-on experiments with Vite 8.3.2, TypeScript 7.0.2 and Node 24.20. Nothing was deployed to Apps Script yet.
 
@@ -20,14 +20,17 @@ Confidence labels used throughout:
 **Decided with the owner**
 
 1. **New purpose (§1).** The starter exists so that people and AI agents can build internal Google Workspace web apps that they can verify before deploying and that are safe by default.
-2. **No mocks of server logic.** Locally, the **real server code** runs in Node. Only Google services (SpreadsheetApp, Session, …) are replaced, by tiny, strict in-memory fakes holding seed data. Local development never touches real spreadsheet data.
-3. **Three environments: local, staging and production.** Staging and production are **separate Apps Script projects**, each bound to its own spreadsheet, with the same code. Stakeholders test on the staging `/exec` URL. Production may only receive a commit that has already been deployed to staging.
+2. **No mocks of server logic.** Locally, the **real server code** runs in Node. Only Google services (SpreadsheetApp, Session, …) are replaced, by tiny, strict in-memory fakes. Local development never touches real spreadsheet data. The fake spreadsheet's contents come from a local seed data file; its **format is still open** (§11.1).
+3. **Three environments: local, staging and production.** Staging and production are **separate Apps Script projects**, each bound to its own spreadsheet, with the same code. Stakeholders test on the staging `/exec` URL. Production may only receive a commit that has already been deployed to staging. The check runs **before** anything is pushed to production (§7.7).
 4. **Command names follow well-known conventions (§6).** The commands are `dev`, `build`, `test`, `push`, `deploy` and `deploy:prod`.
 5. **Design doc in English.**
+6. **Access.** The default `webapp.access` is **`DOMAIN`** (organization only), with `executeAs: USER_DEPLOYING`. The build allows only `MYSELF` and `DOMAIN`. Public access (`ANYONE`, `ANYONE_ANONYMOUS`) is never allowed.
+7. **Live verification is approved.** The owner approved running the §10 checks on their Google Workspace account. Use throwaway projects shared within the organization (`DOMAIN`, never public), and delete them afterwards.
+8. **Every generated top-level function is a public endpoint.** This includes `doGet`, `doPost` and trigger pass-throughs (Codex review). Simple-trigger stubs reject forged calls (§7.1), and dev and tests mirror this (§7.2, §7.5).
 
-**Pending owner decisions (§11):** whether to include a dev mode that runs against real staging data; where to do the work; permission for a live smoke test on the owner's Google account; README/AGENTS.md language; per-environment `access`.
+**Pending owner decisions (§11):** the local seed-data format (JSON vs CSV), to be discussed calmly before implementation; whether to also offer a dev mode against real staging data; where to do the work; README/AGENTS.md language; the repository name.
 
-**Next steps:** see §12. The first step is a live smoke test (§10), which is a release blocker, then implementation in the order given.
+**Next steps:** see §12. First settle §11.1 (seed-data format). Then run the live smoke test (§10), which is a release blocker, then implement in the order given.
 
 ---
 
@@ -150,9 +153,9 @@ There are two versions:
 1. **One implementation.** Locally, the real server source runs; only Google services are faked. Fakes are tiny and **strict**. Anything not emulated throws `<Service>.<member> is not emulated locally (tools/gas-fakes.ts). Add it, or verify on /dev after npm run push`.
 2. **Local is stricter than GAS, never looser.**
 3. **Invariants live in the build, types and tests.** AGENTS.md is a short map, not a rulebook.
-4. **Every export of `src/server/api.ts` is a public endpoint** that runs with the owner's privileges. Nothing else is callable.
+4. **Every generated top-level function is a public endpoint** that runs with the owner's privileges and can be called through `google.script.run` with arbitrary JSON arguments. These are the exports of `src/server/api.ts` plus any `doGet`/`doPost`/trigger pass-throughs. Nothing else is callable.
 5. **Safe defaults.**
-   - `USER_DEPLOYING` + `MYSELF`.
+   - `USER_DEPLOYING` + `DOMAIN`. Only `MYSELF` and `DOMAIN` are allowed.
    - `push` never changes what stakeholders or users see.
    - `deploy` never changes a URL.
    - Production only receives what staging received.
@@ -170,7 +173,7 @@ There are two versions:
 
 | Environment | Who uses it | Code | Data | How it is updated |
 |---|---|---|---|---|
-| Local | developer, AI agents | working tree | in-memory fake spreadsheet with seed rows (sheet-shaped 2-D arrays) | `npm run dev`, `npm test` |
+| Local | developer, AI agents | working tree | in-memory fake spreadsheet, loaded from a local seed data file (format TBD, §11.1); tests use their own small data | `npm run dev`, `npm test` |
 | Staging `/dev` (HEAD) | developer only (script editors) | last push | staging spreadsheet | `npm run push` |
 | Staging `/exec` | stakeholders (testing) | a deployed commit | staging spreadsheet | `npm run deploy` |
 | Production `/exec` | users | **only a commit already deployed to staging** | production spreadsheet | `npm run deploy:prod` |
@@ -232,7 +235,8 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 ├── .claude/settings.json  permissions.ask for `npm run deploy:prod*` (human approves production)
 ├── .gitignore             node_modules, dist, .clasprc.json
 ├── package.json           "type": "module", engines node >= 24, exact-pinned devDeps, scripts
-├── appsscript.json        V8, timeZone, exceptionLogging STACKDRIVER, webapp {executeAs USER_DEPLOYING, access MYSELF}; no oauthScopes
+├── appsscript.json        V8, timeZone, exceptionLogging STACKDRIVER, webapp {executeAs USER_DEPLOYING, access DOMAIN}; no oauthScopes
+├── dev/                   local seed data for the fake spreadsheet (file format TBD, §11.1)
 ├── vite.config.ts         ~6 lines: root src/client, outDir ../../dist, plugins [appsScript()]
 ├── tsconfig.json          tooling project (vite.config.ts, tools/, test/; types node + google-apps-script) + references
 ├── tools/                 local Node only, never bundled
@@ -267,7 +271,7 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 
 **Manifest guard**
 
-- Fail with an explanation unless `webapp.access ∈ {MYSELF, DOMAIN}` and `webapp.executeAs === USER_DEPLOYING`.
+- Fail with an explanation unless `webapp.access ∈ {MYSELF, DOMAIN}` and `webapp.executeAs === USER_DEPLOYING`. The template ships with `DOMAIN`, so stakeholders can open staging and users can open production. `MYSELF` is for working alone. Public access is never allowed.
 - Changing this means editing the guard, which shows up in the diff.
 - Emit `appsscript.json` to dist.
 
@@ -278,9 +282,13 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 - `output.entryFileNames: 'code.js'`.
 - `output.banner: '/** @OnlyCurrentDoc */'`. It survives the build (V).
 - `output.footer` generates one **top-level function per export**, except `default`:
-  - `doGet`, `doPost`, `onOpen`, `onEdit`, `onInstall` and `onSelectionChange` pass through: `function doGet(e){ return __app.doGet(e); }`.
+  - `doGet` and `doPost` pass through: `function doGet(e){ return __app.doGet(e); }`. They are public by nature, because anyone with access can hit the URL with any parameters. Treat `e` as untrusted input, and keep `doGet` free of side effects.
+  - The simple-trigger names `onOpen`, `onEdit`, `onInstall` and `onSelectionChange` pass through **with an authenticity guard**: `function onEdit(e){ __trigger(e); return __app.onEdit(e); }`.
+    - `__trigger` throws unless `e.source` (or `e.range`) is a genuine Apps Script object, i.e. it has methods such as `getId`.
+    - This works because `google.script.run` cannot carry functions: its argument check rejects them, so a forged event can only be plain JSON (D for the argument check; U for the event shapes, §10).
+    - Without the guard, any web-app user could call a state-changing trigger with arbitrary arguments and the deployer's privileges. Apps Script hides only `_`-suffixed and non-top-level functions (Codex review).
   - Every other export becomes `function name(){ return JSON.stringify(__app.name.apply(this, arguments)); }`.
-  - Only these stubs and `__app` are global, so internal helpers are not callable (V in Node vm).
+  - Only these stubs and `__app` are global, so internal helpers are not callable (V in Node vm). **Every stub is a public endpoint**, including the pass-throughs.
 - **Why JSON strings:** the transport is identical in dev, tests and GAS by construction. A Date leaked from `getValues()` arrives as an ISO string instead of nulling the whole result. This generalizes upstream PR #4.
 
 ### 7.2 Dev (`npm run dev` = `vite`)
@@ -293,12 +301,12 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 - **What the middleware's `invoke()` does:**
   1. `env.runner.clearCache()`: fresh module state per call, like a new GAS execution.
   2. Import `tools/gas-fakes.ts` and `src/server/main.ts`.
-  3. Reject non-exported names, pass-through names (doGet etc.) and names ending in `_`, with `Script function not found: x`.
+  3. Reject non-exported names and names ending in `_`, with `Script function not found: x`. **Pass-through names stay callable**, exactly as on GAS. Simple-trigger names go through the same `__trigger` guard, so local runs show the production behaviour: a forged `onEdit` call is rejected. Calling `doGet` locally fails loudly, because `HtmlService` is not emulated.
   4. `actAs(user)`, then call the function.
   5. A thenable result throws `exports must be synchronous (GAS has no async I/O)`.
   6. Reply with `JSON.stringify(result)`, the same string the production stub returns, or `{error:{name,message}}`. Print the stack to the terminal so agents see it.
 - **Reloads and data.** Server edits apply on the next call without a restart. Fake data persists on `globalThis` until the server restarts. `doGet` is not emulated; the build test covers it.
-- **Possible addition (pending §11.1):** a "dev shell" mode that loads the local UI with HMR inside the staging `/dev` page, using the **real** `google.script.run` and the real staging data. A recipe is in Appendix C. It is not tested end to end.
+- **Possible addition (pending §11.2, item 1):** a "dev shell" mode that loads the local UI with HMR inside the staging `/dev` page, using the **real** `google.script.run` and the real staging data. A recipe is in Appendix C. It is not tested end to end.
 
 ### 7.3 Client and types
 
@@ -325,7 +333,7 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 - **Honesty about values.** Values are stored as given; Sheets' auto-typing is **not** modelled, and the docs say so. Two narrow behaviors are modelled:
   - A leading `'` is stripped on store.
   - An unprefixed string starting with `=` is refused (`formula writes are not emulated`), so code must write user text with a leading `'`, which also prevents formula injection.
-- **Seed data** is sheet-shaped (header row + rows).
+- **Seed data** is sheet-shaped: a header row plus data rows, per sheet. `npm run dev` loads it from a file under `dev/`. Tests use their own small data, so editing the dev data never breaks tests. The file format (JSON vs CSV), the date notation and whether dev writes are saved back are **open (§11.1)**.
 - **Known gap, to be stated in README/AGENTS.md:** Node globals remain available at runtime to *bundled npm dependencies*. `tsc` only guards our own sources.
 
 ### 7.5 Tests (`npm test` = `tsc -b && vite build && node --test`)
@@ -343,7 +351,8 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 
 **`test/build.test.ts`** loads `dist/code.js` with `new vm.Script` in an empty context. This shows the file parses as a classic script, is non-empty, and calls no services at the top level. It also asserts:
 
-- the top-level function names deep-equal the snapshot `['decide','doGet','load','submit']`. A comment explains that adding an export adds a public endpoint.
+- the top-level function names deep-equal the snapshot `['decide','doGet','load','submit']`. A comment explains that adding an export, **including a trigger or `doPost`**, adds a public endpoint.
+- if the example ever exports a simple trigger, a forged call through the shim (e.g. `onEdit({ range: {} })`) is rejected by the `__trigger` guard. Include this test whenever a trigger is added.
 - the `@OnlyCurrentDoc` banner is present
 - `dist/index.html` has no external `src`/`href` to local files
 - `dist/appsscript.json` equals the source
@@ -360,21 +369,22 @@ How to create the production project with `-P .clasp.prod.json` must be confirme
 2. **Select the target:**
    - staging: `.clasp.json`
    - prod: `-P .clasp.prod.json`. If the file is missing, explain how to create the production project.
-3. **Push:** `clasp [-P f] push -f`.
-4. **Find the deployment:** `clasp [-P f] --json list-deployments`, keeping only entries with a `versionNumber`.
+3. **Production gate (prod only, before anything touches the production project):** read the staging deployments (`clasp --json list-deployments` on `.clasp.json`) and require one whose description starts with `HEAD`'s short SHA. Otherwise stop with "deploy this commit to staging first (`npm run deploy`)". There is no override flag, because agents would use it.
+   - It must run before the push. Otherwise unapproved code would already reach the production project's HEAD, where it can run against production data through `/dev`, even though `/exec` is never repointed (Codex review).
+4. **Push:** `clasp [-P f] push -f`.
+5. **Find the deployment:** `clasp [-P f] --json list-deployments`, keeping only entries with a `versionNumber`.
    - Exactly one: `create-deployment -i <id> -d "<short sha> <subject>"`.
    - None: create one and print "this is a new URL".
    - More than one: refuse, and tell the user to archive the extras in "Manage deployments".
-5. **Production gate:** before pushing to prod, read the staging deployments and require one whose description starts with `HEAD`'s short SHA. Otherwise stop with "deploy this commit to staging first (`npm run deploy`)". There is no override flag, because agents would use it.
 6. **Report:** print the `/exec` URL, and warn when `versionNumber ≥ 180` (the limit is 200).
-7. **Rollback:** `--version N` runs `create-deployment -i <id> -V N` with no build.
+7. **Rollback:** `--version N` runs `create-deployment -i <id> -V N` with no build and no push. For production it still requires `.clasp.prod.json`, and it never pushes.
 8. **Never** delete anything, never store IDs, never prompt interactively. Prompts block agents; the human gate is `.claude/settings.json` `permissions.ask`.
 
 ### 7.8 Agent files
 
 - **AGENTS.md** (≤ 50 lines):
   - run `npm test` before claiming done
-  - every export in `api.ts` is public: validate arguments and check the caller
+  - every export is public, including `doGet`/`doPost`/triggers: validate arguments and check the caller
   - use `server`, never `google.script.run` directly
   - exports are synchronous
   - no Date/Map arguments, no keys ending `__`
@@ -443,27 +453,66 @@ Replacing the example means editing `api.ts`, `sheet.ts`, `main.ts`, `app.test.t
 13. **Fresh state.** Each `google.script.run` call starts with fresh module-level state.
 14. **Deployer identity.** Whose identity a `USER_DEPLOYING` app runs as after a *different* editor runs `deploy`. This affects `isOwner()` and needs an ops note.
 15. **Locking.** `waitLock` serializes two concurrent `decide()` calls from different users.
+16. **Trigger authenticity.** Genuine `onOpen` and `onEdit` events carry `e.source` / `e.range` objects with methods. A forged call through `google.script.run`, which can only carry JSON, is rejected by the `__trigger` guard (§7.1).
+17. **`DOMAIN` access.** A non-owner in the same organization can open the staging `/exec` and is identified by email. Users outside the organization are refused.
+18. *(Optional, informs §11.2.)* Dev-shell feasibility per Appendix C: the local UI with HMR runs inside the staging `/dev` page, against real `google.script.run`.
 
-Make this a throwaway project (spreadsheet + bound script), get the owner's permission before creating it, and delete it afterwards.
+**Approval:** the owner approved running these checks on their Google Workspace account (2026-10-06). Use throwaway projects (spreadsheet + bound script), share them within the organization only (`DOMAIN`, never public), and delete them afterwards. Do not record account or domain names in this public document.
 
 ---
 
 ## 11. Open questions for the owner
 
-1. **Dev against real staging data.** Should v1 include the dev-shell mode (local UI with HMR inside staging `/dev`, real `google.script.run`, real staging data)? Recommendation: not in v1, because it is untested, needs a browser login and a Chrome Local Network Access prompt, and agents can't use it. Add it later if wanted. The name must follow §6 conventions.
+### 11.1 Local seed-data format: JSON vs CSV (on hold; discuss before implementation)
+
+**Status.** The owner wants to evaluate this calmly before deciding. Do not pick a format without the owner.
+
+**What is settled.**
+- The local fake spreadsheet's contents come from a file under `dev/`, in sheet shape: a header row plus rows, per sheet.
+- The server code keeps calling `SpreadsheetApp` exactly as on GAS.
+- Tests use their own small data.
+- Considered and rejected: a "storage port" with separate JSON and Sheets implementations. Its Sheets code would never run locally.
+
+**How CSV came up.** The owner proposed a JSON file. In the reply, Claude proposed sheet-shaped JSON, e.g. `{"requests": [["id","title",…], ["r1","…",…]]}`. Claude mentioned CSV only as a way to bring real data in: download a staging sheet as CSV, then convert it to JSON. The owner pointed out that CSV appearing at all suggests it may have merits as the format itself. That has not been evaluated yet.
+
+**Points to weigh** (neutral; no conclusion yet):
+
+| Point | JSON | CSV |
+|---|---|---|
+| Round-trip with real Sheets | needs a conversion step | native per-sheet download (File → Download → CSV) and import |
+| Who edits it | code and agents | also non-engineers, in Sheets/Excel |
+| Types | numbers, booleans and `null`, but no Date | everything is text |
+| Structure | one file can hold every sheet | one file per sheet (e.g. `dev/requests.csv`), mapping 1:1 to sheet names |
+| Diffs | line-per-row only if formatted that way | naturally line-per-row |
+| Parsing | built in | needs a small RFC 4180 parser (quotes, commas, newlines in cells), about 30 lines; a dependency would conflict with "light" |
+| Excel on Windows | — | encoding risk (Shift_JIS vs UTF-8 with BOM) |
+
+Notes on the table:
+- **Types.** Real `getValues()` returns typed values: number, boolean, Date and string. Each format therefore needs explicit rules: JSON for dates; CSV for every non-string type. The alternative, applying Sheets-like auto-typing, is guessing, which the fakes deliberately avoid (§7.4).
+- **Other details to settle with this decision:** empty cells, formulas, leading apostrophes, the date notation, whether writes during `npm run dev` are saved back (and to which file, given git noise), and whether a helper to pull real staging data is wanted.
+
+### 11.2 Other open questions
+
+1. **Dev against real staging data.** Should v1 also offer the dev-shell mode (local UI with HMR inside staging `/dev`, real `google.script.run`, real staging data)? It would complement 11.1; it would not replace it.
+   - Earlier recommendation: not in v1, because it is untested, needs a browser login and a Chrome Local Network Access prompt, and agents can't use it.
+   - Optional §10 item 18 can test feasibility first.
+   - The name must follow §6 conventions.
 2. **Work location.** Recommendation: on a branch of this repo, replacing its contents, merged via PR.
-3. **Live smoke test.** Permission to run §10 on the owner's Google account with a throwaway project.
-4. **Language.** README / AGENTS.md: English (like upstream) or Japanese (like the local rewrite)? This design doc is in English per the owner.
-5. **Per-environment `access`.** For example, staging `DOMAIN` (stakeholders) while production stays `MYSELF` until launch. That would mean the deploy script patches the manifest per target. Default: one manifest for both.
-6. **Repository name.** Keep `apps-script-vite-starter`?
+3. **Language.** README / AGENTS.md: English (like upstream) or Japanese (like the local rewrite)? This design doc is in English per the owner.
+4. **Repository name.** Keep `apps-script-vite-starter`?
+
+### Resolved (2026-10-06)
+
+- **Live smoke test:** approved on the owner's Workspace account, with organization-only sharing (§10).
+- **Access:** the default is `DOMAIN` for both staging and production; only `MYSELF` and `DOMAIN` are allowed; public access is never allowed. No per-environment manifest patching for now.
 
 ---
 
 ## 12. Implementation plan
 
-1. Resolve §11 (at least 2–4).
-2. **Live smoke test** of §10 items 1–8 and 11 with a minimal hand-built `dist/` (release blocker). Record the results in this document.
-3. Scaffold `package.json` (scripts per §6), the 3 tsconfigs, `vite.config.ts` and `tools/apps-script.ts`. Start from Appendix A, then add `clearCache`, the fakes import, the JSON stubs, pass-through names, the manifest/BigInt guards, the banner and the client guards.
+1. Discuss and decide §11.1 (seed-data format) with the owner. Resolve §11.2 items 2–3.
+2. **Live smoke test** of §10 items 1–8, 11, 16 and 17 (optionally 18) with a minimal hand-built `dist/` (release blocker). Record the results in this document.
+3. Scaffold `package.json` (scripts per §6), the 3 tsconfigs, `vite.config.ts` and `tools/apps-script.ts`. Start from Appendix A, then add `clearCache`, the fakes import, the JSON stubs, the pass-through names with the `__trigger` guard, the manifest/BigInt guards, the banner and the client guards.
 4. Write `tools/google-script.js` (port Google's argument check) and `tools/gas-fakes.ts`.
 5. Write the example app: `src/server/{main,api,sheet}.ts` and `src/client/{index.html,server.ts,main.ts,style.css}`.
 6. Write the tests (`test/app.test.ts`, `test/build.test.ts`). `npm test` must be green, in about 2 s or less.
@@ -660,7 +709,7 @@ The type-only import adds nothing to the client bundle (V).
 
 ## Appendix C — Dev shell recipe (not tested in Apps Script)
 
-This is for §11.1. Push an owner-only HEAD page that loads the Vite dev server directly, using Vite's backend-integration mode. `google.script.run` is then the real one, and no postMessage bridge is needed.
+This is for §11.2, item 1. Push an owner-only HEAD page that loads the Vite dev server directly, using Vite's backend-integration mode. `google.script.run` is then the real one, and no postMessage bridge is needed.
 
 ```html
 <!doctype html><html><head><base target="_top"></head><body><div id="app"></div>
@@ -683,3 +732,15 @@ What this depends on:
 - Vite's WebSocket token check (verified in source).
 
 Expect a one-time Chrome Local Network Access prompt.
+
+---
+
+## Revision history
+
+- **2026-10-05:** initial version.
+- **2026-10-06:** revised after owner decisions and the Codex review of PR #6.
+  - The default access is `DOMAIN`, so stakeholders can use staging. This resolves Codex's P2 finding.
+  - The production gate now runs before any production push (Codex P1).
+  - All generated top-level stubs, including `doGet`/`doPost`/trigger pass-throughs, are treated as public. Simple triggers get the `__trigger` authenticity guard, and dev and tests mirror GAS (Codex P1).
+  - Live verification is approved on the owner's Workspace account with organization-only sharing.
+  - The local seed-data format (JSON vs CSV) is on hold for discussion (§11.1).
